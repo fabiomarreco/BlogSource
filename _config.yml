@@ -1,0 +1,51 @@
+# Build settings
+permalink: /blog/:year/:title/
+markdown: kramdown
+highlighter: pygments
+gems: [jekyll-paginate]
+
+paginate: 3
+paginate_path: "/blog/page/:num/"
+comments: true
+
+source: source
+destination: _site
+sass:
+  sass_dir: _sass
+  style: compressed # expanded
+
+# SEO settings
+title: Marreco´s coding blog
+description: "Free thoughts on software development"
+keywords: "Marreco, Fabio, DDD, blog, Domain Driven Design, C#, F#, .NET"
+url: "http://fabiomarreco.github.io"
+baseurl: ""
+
+google_analytics: UA-52446115-1
+repo: https://github.com/fabiomarreco
+disqus_shortname: "fabiomarreco"
+disqus_site_shortname: "fabiomarreco"
+
+# Author settings
+author:
+  name: Fabio Marreco
+  job: Sr. Manager & Software Engineer @ Accenture
+  bio: "Dad, Husband, Software enthusiast with a taste for modeling, functional and OO"
+  thumb: /images/author.jpg
+  email: fabio.marreco@gmail.com
+  url: "http://fabiomarreco.github.io/"
+  github: https://github.com/fabiomarreco
+  twitter: https://twitter.com/fmarreco
+  facebook: https://www.facebook.com/fabio.marreco.54
+  linkedin: https://linkedin.com/in/fabio-marreco-719946a/
+
+# navbar pages
+navbar:
+  - slug: about
+    title: About
+  - slug: icons
+    title: Icons
+  - slug: blog
+    title: Blog
+
+exclude: ["config.rb", "src", "Gemfile", "Gemfile.lock", "package.json","README.md", "Rakefile"]
