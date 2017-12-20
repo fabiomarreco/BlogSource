@@ -26,4 +26,5 @@ group :jekyll_plugins do
   gem "pygments.rb"
   gem "jekyll-compose"
   gem "kramdown"
+  gem "redcarpet"
 end
