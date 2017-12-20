@@ -33,7 +33,7 @@ And suppose we want to add a new feature to our online store, giving the ability
 
 For example, if we want filter based on the product category, we could add a `GetProductsWithCategory` method as such:
 
-{% highlight csharp %}
+```csharp
 public class ProductRepository 
 {
     private List<Product> _items;
@@ -44,7 +44,7 @@ public class ProductRepository
         return _items.Where(c=> c.Category == category);
     }
 }
-{% endhighlight %}
+```
 
 I´m accessing a in-memory list in this case, but it could be accessing a SQL database or some other store. That is not the point. It is to be taken as an example. You could argue in this example, that we could have a method as `IQueryable<Product> GetItems()` and filter the data on the client. While that might be true for a simple in-memory list, if we were using an EntityFramework-like ORM, that would force us to expose the EF query capabilities to the client, and that is a bad design. Not all LINQ queries can be translated to a SQL query, and we would need to rely on the developer to create a valid query.
 
