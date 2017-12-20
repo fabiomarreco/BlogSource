@@ -14,6 +14,8 @@ tags:
 
 ## The Pattern
 
+change - 
+
 An important design pattern with extreme resonance in *Model Driven Design* is the **Specification** pattern. It enables encapsulation of complex business logics in a simple interface. 
 In complex systems, it is common when we are trying to simplify business logic, it is common to go at least halfway this pattern.
 
