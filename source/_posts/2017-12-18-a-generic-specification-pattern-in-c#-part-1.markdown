@@ -4,10 +4,12 @@ title: "A Generic Specification Pattern in C# - Part 1"
 description: "A Generic Specification Pattern in C# - Part 1"
 date: 2017-12-18
 comments: true
-keywords: "c#, domain driven design, ddd, specification"
+keywords: "C#, domain driven design, ddd, specification"
 category: Design Patterns
 tags:
 - Design Pattern
+- Specification
+- C#
 ---
 
 # A Generic Specification Pattern in C# - Part 1
@@ -51,7 +53,7 @@ I´m accessing a in-memory list in this case, but it could be accessing a SQL da
 That works fine. Now if we need to add new search features, such as finding products at a price range, or with name containing a particular string, we would need a method for each one of those:
 
 
-{% highlight csharp %}
+```csharp
 public class ProductRepository 
 {
     private List<Product> _items;
@@ -64,13 +66,13 @@ public class ProductRepository
     public IEnumerable<Product> GetProductsWithNameContaining(string substring)
     // { .. }
 }
-{% endhighlight %}
+```
 
 You see where this is going ? We´re clogging the repository with methods for each new capability of the search feature. As a consequence, this class is violating the Open/Closed principle, which states that we should be open for extension, but closed for modification (since we have to modify the class for each new feature).
 
 Instead, let´s imagine we could specify which products we are interested in, and pass that `Specification` to our repository, reducing to a single method:
 
-{% highlight csharp %}
+```csharp
 public class ProductRepository 
 {
     private List<Product> _items;
@@ -83,40 +85,40 @@ public class ProductRepository
                 yield return product;
     }
 }
-{% endhighlight %}
+```
 
 Where the `IProductSpecification` interface would look like this:
 
-{% highlight csharp %}
+```csharp
 public interface IProductSpecification
 {
     bool Specification IsSatisfiedBy(Product products);
 }
-{% endhighlight %}
+```
 
 We will want to use this pattern in different types of entities, not only `Products` right? In C# we can do that easily by making specification a generic type:
 
-{% highlight csharp %}
+```csharp
 public interface ISpecification<T>
 {
     bool Specification IsSatisfiedBy(T item);
 }
-{% endhighlight %}
+```
 
 With the `GetProducts` method of the repository looking like this:
 
-{% highlight csharp %}
+```csharp
 public IEnumerable<Product> GetProducts(ISpecification<T> specification)
 {
     foreach (var product in _items)
         if (specification.IsSatisfiedBy(product))
             yield return product;
 }
-{% endhighlight %}
+```
 
 Now we can implement each new search capability as a separate class:
 
-{% highlight csharp %}
+```csharp
 public class ProductMatchesCategory : ISpecification<Product>
 {
     public string Category { get; set; }
@@ -138,7 +140,7 @@ public class ProductPriceInRange : ISpecification<Product>
     }
     public bool IsSatisfiedBy(Product item) => (item.Price >= LowerBound) && (item.Price <= UpperBound);
 }
-{% endhighlight %}
+```
 
 To the distrait eye, it might seem cumbersome to create a class for each possible filter. And it might be so for very simple models, but as the complexity of the system grows, I can guarantee that trying to keep up with multiple methods of the repository, will far exceed the complexity of this pattern.
 
@@ -149,7 +151,7 @@ To the distrait eye, it might seem cumbersome to create a class for each possibl
 
 Since specifications have the same signature, we can play around to combine them using boolean operators, which will really make this pattern shine. Let´s start with the main operators `And`, `Or` and `Not`:
 
-{% highlight csharp %}
+```csharp
 public class AndSpecification<T> : ISpecification<T>
 {
     public ISpecification<T> Left { get; set; }
@@ -183,11 +185,11 @@ public class NotSpecification<T> : ISpecification<T>
     }
     public bool IsSatisfiedBy(T item) => !Specification.IsSatisfiedBy(item);
 }
-{% endhighlight %}
+```
 
 Leveraging the features of C#, we can create an extension in order to make its usage more fluent:
 
-{% highlight csharp %}
+```csharp
 public static class SpecificationExtensions
 {
     public static ISpecification<T> And(this ISpecification<T> left, ISpecification<T> right)
@@ -203,15 +205,15 @@ public static class SpecificationExtensions
         return new NotSpecification<T> (specification);
     }
 }
-{% endhighlight %}
+```
 
 That would enable us to create more complex specifications like this:
 
-{% highlight csharp %}
+```csharp
 new ProductPriceInRange(0M, 100M)
     .And (new ProductMatchesCategory("Clothes")
             .Or(new ProductMatchesCategory("Electronics")));
-{% endhighlight %}
+```
 
 Pretty cool, right ? On next part, we´ll try to improve the extensibility of the specification by using a Visitor pattern, while still keeping the specification generic.
 
