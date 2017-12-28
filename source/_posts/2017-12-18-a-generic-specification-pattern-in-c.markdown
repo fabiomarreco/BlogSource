@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "A Generic Specification Pattern in C# - Part 1"
-description: "A Generic Specification Pattern in C# - Part 1"
+title: "A Generic Specification Pattern in C#"
+description: "A Generic Specification Pattern in C#"
 date: 2017-12-18
 comments: true
 keywords: "C#, domain driven design, ddd, specification"
@@ -12,15 +12,15 @@ tags:
 - C#
 ---
 
-# A Generic Specification Pattern in C# - Part 1
+# A Generic Specification Pattern in C#
 
 ## The Pattern
 
-An important design pattern with extreme resonance in *Model Driven Design* is the **Specification** pattern. It enables encapsulation of complex business logics in a simple interface. 
-In complex systems, it is common when we are trying to simplify business logic, it is common to go at least halfway this pattern.
+An important design pattern with extreme resonance in *Model Driven Design* is the **Specification**. It enables encapsulation of complex business logics in a simple interface. 
+In complex systems, it is common when trying to simplify business logic, go at least halfway this pattern.
 
-In few words, we will have a interface `ISpecification` with a single method, returning boolean indicating if a object is satisfied by the specification. 
-There are many use cases, a classic one being filtering. For example, suppose we have an online store with many products, as such:
+In few words, we will have an interface `ISpecification` with a single method, returning boolean indicating if a object is satisfied by the specification. 
+There are many use cases, a classic one being filtering. For example, suppose we have an online store with many products, such as:
 
 | ProductID |  ProductName   |  Price  |  Category   |
 | --------- | -------------- | ------- | ----------- |
@@ -31,7 +31,7 @@ There are many use cases, a classic one being filtering. For example, suppose we
 | 0214      | TV             | $699.99 | Electronics |
 | 0215      | LED Flashlight | $5.00   | Electronics |
 
-And suppose we want to add a new feature to our online store, giving the ability to the user to filter the products based on certain criteria. The straight forward approach would be to add specific methods to our repository *(design pattern that we will cover latter)*. 
+And suppose we want to add a new feature to our online store, giving the ability to the user to filter the products based on certain criteria. The straight forward approach would be to add specific methods to our **repository** *(design pattern that we will cover latter)*. 
 
 For example, if we want filter based on the product category, we could add a `GetProductsWithCategory` method as such:
 
@@ -68,9 +68,9 @@ public class ProductRepository
 }
 ```
 
-You see where this is going ? We´re clogging the repository with methods for each new capability of the search feature. As a consequence, this class is violating the Open/Closed principle, which states that we should be open for extension, but closed for modification (since we have to modify the class for each new feature).
+You see where this is going? We´re clogging the repository with methods for each new capability of the search feature. As a consequence, this class is violating the Open/Closed principle, which states that we should be open for extension, but closed for modification (since we have to modify the class for each new feature).
 
-Instead, let´s imagine we could specify which products we are interested in, and pass that `Specification` to our repository, reducing to a single method:
+Instead, let´s imagine we could **specify** which products we are interested in, and pass that `Specification` to our repository, reducing to a single method:
 
 ```csharp
 public class ProductRepository 
@@ -108,7 +108,7 @@ public interface ISpecification<T>
 With the `GetProducts` method of the repository looking like this:
 
 ```csharp
-public IEnumerable<Product> GetProducts(ISpecification<T> specification)
+public IEnumerable<Product> GetProducts(ISpecification<Product> specification)
 {
     foreach (var product in _items)
         if (specification.IsSatisfiedBy(product))
@@ -213,6 +213,25 @@ That would enable us to create more complex specifications like this:
 new ProductPriceInRange(0M, 100M)
     .And (new ProductMatchesCategory("Clothes")
             .Or(new ProductMatchesCategory("Electronics")));
+```
+
+That example shows how you can use it to create a filtering feature. However, the specification pattern is a lot more powerful than that.
+
+Following the previous example, suppose that we want our customers to be notified when there is a price change on a given product. It shouldnt be a broadcast to all users, but rather a subset of users that meet certain criteria, such as:
+
+- Users that have previously purchased products from the same category.
+- Users that have *starred* the current product 
+- Only users that have been active on the previous year
+
+As developers, we know for a fact that management will want to change those rules eventually, so we need a solution that allows extensibility without changing existing code. The *Specification Pattern* fits those requirements perfectly.
+
+```csharp
+ISpecification<User> spec = 
+    new UserPurchasedProductWithCategory(product.Category)
+    .Or(new UserWithStarredProduct(product))
+    .And(new UserActiveSince(DateTime.Today.AddYears(-1)))
+
+userNotificationService.Notify(spec, message);
 ```
 
 Pretty cool, right ? On next part, we´ll try to improve the extensibility of the specification by using a Visitor pattern, while still keeping the specification generic.
