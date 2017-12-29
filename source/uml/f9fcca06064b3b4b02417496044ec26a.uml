@@ -1,0 +1,8 @@
+@startuml
+
+(And) --> (ProductPriceInRange:\n**0 - 100**)
+(And) --> (Or)
+(Or) --> (ProductMatchesCategory:\n**Clothes**)
+(Or) --> (ProductMatchesCategory:\n**Electronics**)
+
+@enduml

@@ -24,7 +24,7 @@ public interface ISpecification<T>
 }
 ```
 
-That is very useful and all, eventually the specification will we have to deal with not-so-fun issues like serializing, translating to SQL or even generating a human-readable representation of the specification.
+That is very useful, but eventually the specification will we have to deal with not-so-fun issues like serializing, translating to SQL or even generating a human-readable representation of the specification.
 Sure, we can pollute the interface with methods that should not be its primary goal:
 
 ```csharp
@@ -55,7 +55,45 @@ That yields a expression tree like this:
 (Or) --> (ProductMatchesCategory:\n**Electronics**)
 {% endplantuml %}
 
- This if effectively another design pattern called [Composite](https://en.wikipedia.org/wiki/Composite_pattern) as each part of the expression tree has uniform behavior.
- Every time we talk about Composites, the **Visitor** pattern should come to mind.
+ This if effectively another design pattern called [Composite](https://en.wikipedia.org/wiki/Composite_pattern) as each part of the expression tree has uniform behavior.and every time we talk about Composites, the **Visitor** pattern should come to mind.
+
+The visitor lets us traverse a composite, taking action on each node that can be specific to each implementation without resorting to typecasting.
 
 
+Letting the the specification example sit aside for a bit, let´s take a simpler example __*without generics*__ as `ProductSpecification`
+
+```csharp
+public interface IProductSpecification
+{
+    bool IsSatisfiedBy(Product item);
+    void Accept(IProductSpecificationVisitor visitor);
+}
+```
+
+And these implementations
+
+```csharp
+public class ProductMatchesCategory : IProductSpecification
+{
+    public string Category { get; }
+    public ProductMatchesCategory (string category)
+    {
+        this.Category = category;
+    }
+    public bool IsSatisfiedBy(Product item) => item.Category == this.Category;
+    public void Accept(IProductSpecificationVisitor visitor) => visit.Visit(this);
+}
+
+public class ProductPriceInRange : IProductSpecification
+{
+    public decimal LowerBound { get; }
+    public decimal UpperBound { get; }
+    public ProductMatchesCategory (decimal lowerBound, decimal upperBound)
+    {
+        this.LowerBound = lowerBound;
+        this.UpperBound = upperBound;
+    }
+    public bool IsSatisfiedBy(Product item) => (item.Price >= LowerBound) && (item.Price <= UpperBound);
+    public void Accept(IProductSpecificationVisitor visitor) => visit.Visit(this);
+}
+```
