@@ -20,17 +20,33 @@ On the [previous](2017-12-18-a-generic-specification-pattern-in-c) post, we show
 ```csharp
 public interface ISpecification<T>
 {
-    bool IsSatisfiedBy(T item)
+    bool IsSatisfiedBy(T item);
 }
 ```
 
-We also showed that we can compose the specification with boolean operators such as `Or`, `And`, `Not`, etc:
+That is very useful and all, eventually the specification will we have to deal with not-so-fun issues like serializing, translating to SQL or even generating a human-readable representation of the specification.
+Sure, we can pollute the interface with methods that should not be its primary goal:
+
+```csharp
+public interface ISpecification<T>
+{
+    bool IsSatisfiedBy(T item);
+    SqlCommand CreateSqlCommand();
+    string GetDescription();
+    //...
+}
+``` 
+
+That is clearly violating the *Single Responsibility Principle*, there should be a better way.
+A good hint comes up if we analyse the specification a little deeper. We showed that we can compose the specification with boolean operators such as `Or`, `And`, `Not`, etc:
 
 ```csharp
 new ProductPriceInRange(0M, 100M)
     .And (new ProductMatchesCategory("Clothes")
             .Or(new ProductMatchesCategory("Electronics")));
 ```
+
+That yields a expression tree like this:
 
 {% plantuml %}
 (And) --> (ProductPriceInRange:\n**0 - 100**)
@@ -39,6 +55,7 @@ new ProductPriceInRange(0M, 100M)
 (Or) --> (ProductMatchesCategory:\n**Electronics**)
 {% endplantuml %}
 
- This behavior, if effectively another desig
+ This if effectively another design pattern called [Composite](https://en.wikipedia.org/wiki/Composite_pattern) as each part of the expression tree has uniform behavior.
+ Every time we talk about Composites, the **Visitor** pattern should come to mind.
 
 
