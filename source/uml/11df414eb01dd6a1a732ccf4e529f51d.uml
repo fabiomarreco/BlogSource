@@ -1,0 +1,8 @@
+@startuml
+
+Visitor :.Visit(Specification)
+Specification :.Accept(visitor)
+
+Specification -> Visitor
+
+@enduml
