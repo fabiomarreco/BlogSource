@@ -42,3 +42,32 @@ let spec2 = ProductNameContains "Samsung" <&> InCategory Tv <|> WithId (ProductI
 
 products |> List.filter (isSatisfyedby spec2)
 
+
+(*
+    fazer um visitor para um discriminated union:
+    sealed class ProductSpecification {
+        protected ctor();
+
+        public sealed class WithId : ProductSpecification {
+            ctor... //pode ser private?
+            public ProductId Id { get; }
+
+            public void Accept(IProductSpecificationVisitor visitor) {... }
+            
+        }
+    }
+    
+
+    internal class IsSatisfyedBy : IProductSpecificationVisitor{... }
+    internal class Match : IProductSpecificationVisitor {
+        ctor (Action<WithId> wid, Action<ProductNameContains>, pName, ...)
+    }
+    
+    )
+
+
+    static class SpecExtensions
+    {
+        bool IsSatisfyedBy<T>(this ProductSpecification)...
+        Maybe<TResult> Maybe<T, TResult> (this T fn) where T: ProductSpecification
+    }

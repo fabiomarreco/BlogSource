@@ -13,7 +13,25 @@ tags:
 - C#
 ---
 
+
 # Using the Specification Pattern with EntityFramework
+
+##Persistence Model != Domain Model
+
+I should start ths post explaining my motivations which might not be be clear to everyone. I also believe that a lot of people will strongly disagree with me.
+When I worked with an ORM for the first time (Entity)
+
+
+
+-----
+Temp:
+
+Vladimir Khorikov has an excelent [course on pluralsight](https://www.pluralsight.com/courses/csharp-specification-pattern) where he explores specification techniques with EntityFramework. There is also a transcribed version [here](http://enterprisecraftsmanship.com/2016/02/08/specification-pattern-c-implementation/). 
+
+
+In a previous post, I´ve 
+
+
 
 We have shown how we can use a [Specification](2017-12-18-a-generic-specification-pattern-in-c) to encapsulate complex logics, specially useful when developing filtering capabilities in the application. In short, a simple interface `ISpecification` handles any potential messy logic you might have:
 
