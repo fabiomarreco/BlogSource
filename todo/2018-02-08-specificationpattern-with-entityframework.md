@@ -1,29 +1,20 @@
 ---
 layout: post
 title: "Using the Specification Pattern with EntityFramework"
-date: 2018-01-12 23:57:52
+date: 2018-02-08 16:38:39
 comments: true
-keywords: "C#, domain driven design, ddd, specification, visitor, entity framework"
+keywords: "C#, domain driven design, ddd, entity framework, specification"
 categories: Design Patterns
 tags:
 - Design Pattern
-- EntityFramework
 - Visitor
 - Specification
+- EntityFramework
 - C#
 ---
 
-
 # Using the Specification Pattern with EntityFramework
 
-##Persistence Model != Domain Model
-
-I should start ths post explaining my motivations which might not be be clear to everyone. I also believe that a lot of people will strongly disagree with me.
-When I worked with an ORM for the first time (Entity)
-
-
-
------
 Temp:
 
 Vladimir Khorikov has an excelent [course on pluralsight](https://www.pluralsight.com/courses/csharp-specification-pattern) where he explores specification techniques with EntityFramework. There is also a transcribed version [here](http://enterprisecraftsmanship.com/2016/02/08/specification-pattern-c-implementation/). 
