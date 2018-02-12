@@ -4,6 +4,7 @@ title: "Introduction to the Visitor Pattern in C#"
 date: 2017-12-28
 comments: true
 keywords: "C#, domain driven design, ddd, specification, visitor"
+description: "The visitor design pattern is often used to navigate on a composite. While that is true, it also overcomes limitations on single-dispatch languages (like C#/Java)"
 category: Design Patterns
 tags:
 - Design Pattern

@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "A Generic Specification Pattern in C#"
-description: "A Generic Specification Pattern in C#"
+description: "The specification design pattern allows encapsulation of complex logic. We will introduce a version using generics where we´ll be able to reuse boolean operators over any specification."
 date: 2017-12-18
 comments: true
 keywords: "C#, domain driven design, ddd, specification"

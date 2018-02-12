@@ -3,6 +3,7 @@ layout: post
 title: Generic Visitor Pattern in C#
 comments: true
 keywords: "C#, domain driven design, ddd, specification, visitor"
+description: "The visitor pattern is hard to use when the visitee is a generic interface. We will present a solution using Specification<T> as example."
 category: Design Patterns
 tags:
 - Design Pattern
