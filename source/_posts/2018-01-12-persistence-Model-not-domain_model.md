@@ -4,6 +4,7 @@ title: "Persistence Model != Domain Model"
 date: 2018-01-12 23:57:52
 comments: true
 keywords: "C#, domain driven design, ddd, specification, visitor, EntityFramework"
+description: "A short (yet opinionated) post about relationships between ORM and the Domain Model."
 categories: Design Patterns
 tags:
 - Design Pattern
