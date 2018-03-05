@@ -4,7 +4,6 @@ using Marreco.SpecificationBlog.Specifications;
 
 namespace Marreco.SpecificationBlog.Products
 {
-
     public interface IProductSpecificationVisitor : ISpecificationVisitor<IProductSpecificationVisitor, Product> {
         void Visit (ProductMatchesCategory spec);
     }
