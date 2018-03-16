@@ -1,0 +1,10 @@
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\obj\Debug\netcoreapp2.0\ef-spec-src.csproj.CoreCompileInputs.cache
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\obj\Debug\netcoreapp2.0\ef-spec-src.AssemblyInfoInputs.cache
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\obj\Debug\netcoreapp2.0\ef-spec-src.AssemblyInfo.cs
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\bin\Debug\netcoreapp2.0\ef-spec-src.deps.json
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\bin\Debug\netcoreapp2.0\ef-spec-src.runtimeconfig.json
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\bin\Debug\netcoreapp2.0\ef-spec-src.runtimeconfig.dev.json
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\bin\Debug\netcoreapp2.0\ef-spec-src.dll
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\bin\Debug\netcoreapp2.0\ef-spec-src.pdb
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\obj\Debug\netcoreapp2.0\ef-spec-src.dll
+C:\projetos\github\blogsource\todo\ef-spec-src\ef-spec-src\obj\Debug\netcoreapp2.0\ef-spec-src.pdb

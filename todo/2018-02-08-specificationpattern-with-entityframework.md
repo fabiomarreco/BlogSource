@@ -31,7 +31,7 @@ So we need to be able to send the specification to the infrastructure layer. Con
 
 Datasets on the entity framework implement `IQueryable<T>`, meaning it has methods that take an expression tree (such as `IQueryable<T>.Where(Expression<Func<T, bool>>)`) and is able handle those expression in a way other than executing immediately in-memory. On Entity Framework´s case, it can translate the expression tree into a SQL Query to be used against the database.
 
-So, our objective will be to translate an `Specification` class into a SQL Query, while restraining ourselves to SOLID principles, and most importantly, not corrupting the domain model.
+So, our objective in this article will be to translate an `Specification` class into a SQL Query, while restraining ourselves to SOLID principles, and most importantly, not corrupting the domain model.
 
 Remembering the [previous post](2018-01-01-generic-visitor-pattern-in-c), whe have created a generic `Visitor`, that could to traverse a specification:
 
@@ -61,11 +61,24 @@ public class ProductMatchesCategory : ISpecification<Product, IProductSpecificat
 
     public void Accept (IProductSpecificationVisitor visitor) 
     {
-        visitor.Visit(this); // Now it compiles!
+        visitor.Visit(this); 
     }
 }
 ```
-----
+
+And as stated before, I have a domain model of a product aggregate: 
+```csharp
+public class Product 
+{
+    public string ID 
+    public string Category { get; }
+    //
+}
+
+```
+
+
+sdadas----
 !!!
 
 Looking at our ISpecification, it is clearly also part of the domain model (along withe the domain class). So adding a new method to that specification that returns a expression  of the Ef class (as *Vladimir Khorikov*  proposes), should not be possible (because the ef class is at the infrastructures layer).
