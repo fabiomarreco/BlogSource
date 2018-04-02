@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Introduction to the Visitor Pattern in C#"
+name: "intro-visitor-c"
 date: 2017-12-28
 comments: true
 keywords: "C#, domain driven design, ddd, specification, visitor"
@@ -15,7 +16,7 @@ tags:
 
 # Introduction to the Visitor Pattern in C#
 
-On the [previous](2017-12-18-a-generic-specification-pattern-in-c) post, we showed how to implement a specification pattern in C#. In short, we have an interface `ISpecification<T>` which states if an object satisfy the specification.
+On the [previous]({{ site.baseurl }}{% post_url 2017-12-18-a-generic-specification-pattern-in-c %}) post, we showed how to implement a specification pattern in C#. In short, we have an interface `ISpecification<T>` which states if an object satisfy the specification.
 
 ```csharp
 public interface ISpecification<T>
