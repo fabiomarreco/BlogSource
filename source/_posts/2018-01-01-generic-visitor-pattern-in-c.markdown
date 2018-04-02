@@ -137,5 +137,6 @@ public class AndSpecification<T, TVisitor> :ISpecification<T, TVisitor> where TV
     public bool IsSatisfiedBy(T obj) => Left.IsSatisfiedBy(obj) && Right.IsSatisfiedBy(obj);
 }
 ```
+The same idea can be easily applied to the other boolean operators (`Or` & `Not`).
 
 These are very powerful patterns, more so when used together. When we get the hang of it, they start showing up everywhere, and it is a great way segregate complex logics on our model. On the next post I´ll show examples of visitors for serializing or querying a database.
