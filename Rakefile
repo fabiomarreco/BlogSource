@@ -25,6 +25,7 @@ task :generate do
   Jekyll::Site.new(Jekyll.configuration({
     "source"      => "source/",
     "destination" => "_site",
+    "environment" => "production",
     "config"      => "_config.yml"
   })).process
 end
