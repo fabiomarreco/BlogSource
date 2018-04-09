@@ -124,7 +124,7 @@ Therefore, to use our specification with the database, we need something to conv
 ```csharp
 public class ProductEFExpressionVisitor : IProductSpecificationVisitor 
 {
-    public Expression<Func<EFExpressionVisitor, bool>> Expr { get; protected set; } = null;
+    public Expression<Func<EFProduct, bool>> Expr { get; protected set; } = null;
     public void Visit (ProductMatchesCategory spec) 
     {
         var categoryName = spec.Category.CategoryName;
