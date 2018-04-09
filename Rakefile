@@ -7,6 +7,7 @@ require "jekyll"
 # Change your GitHub reponame
 GITHUB_REPONAME = "fabiomarreco/fabiomarreco.github.io"
 GITHUB_REPO_BRANCH = "master"
+JEKYLL_ENV= "production"
 
 SOURCE = "source/"
 DEST = "_site"
@@ -26,6 +27,7 @@ task :generate do
     "source"      => "source/",
     "destination" => "_site",
     "environment" => "production",
+    "JEKYLL_ENV"  => "production",
     "config"      => "_config.yml"
   })).process
 end
