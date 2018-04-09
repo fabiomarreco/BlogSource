@@ -136,6 +136,7 @@ public class ProductEFExpressionVisitor : IProductSpecificationVisitor
 ```
 
 which you will be able to use it like this:
+
 ```csharp
 public class ProductRepository
 {
@@ -158,6 +159,7 @@ public class ProductRepository
     private Product ConvertPersistenceToDomain(EFProduct entity) { /* ... */ }
 }
 ```
+
 So now, our repository has a generic method for querying products given any available filter that we implement as a specification. 
 
 ### But Wait! What about the boolean operators ?
