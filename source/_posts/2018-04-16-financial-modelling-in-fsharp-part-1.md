@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Financial modelling in F# Part 1"
+title: "Financial modelling in F# Part 1 - Interest Rates"
 permalink: financial-modelling-in-fsharp-part-1
 date: 2018-04-16 15:43:35
 comments: true
@@ -10,10 +10,11 @@ categories: Modelling
 tags:
 - Finance
 - FSharp
+- Modelling
+- Beginner
 ---
 
-
-# Financial Fundamental modelling in F# - Part 1
+# Financial modelling in F# - Part 1 (Interest Rates)
 
 I work developing a financial application that is used by financial institutions such as hedge funds and investment banks. One common assignment is to model financial contracts, and calculate many analytics upon them, such as pricing valuation or risk measures. The application is developed in C#. However, I´ve found that F# is a great language to model financial applications, and I use it almost daily to test the application or when creating a new model.
 
@@ -29,23 +30,24 @@ We will eventually look into some of these bounded contexts, and see with exampl
 
 [Investopedia](https://www.investopedia.com/terms/i/interestrate.asp#ixzz5DFCuY8dw) defines interest rates as:
 
->*An interest rate is the amount of interest due per period, as a proportion of the amount lent, deposited or borrowed (called the principal sum). The total interest on an amount lent or borrowed depends on the principal sum, the interest rate, the compounding frequency, and the length of time over which it is lent, deposited or borrowed. It is defined as the proportion of an amount loaned which a lender charges as interest to the borrower, normally expressed as an annual percentage. It is the rate a bank or other lender charges to borrow its money, or the rate a bank pays its savers for keeping money in an account.*
+>*An interest rate is the amount of interest due per period, as a proportion of the amount lent, deposited or borrowed (called the principal sum). The total interest on an amount lent or borrowed depends on the principal sum, the interest rate, the compounding frequency, and the length of time over which it is lent, deposited or borrowed. It is defined as the proportion of an amount loaned which a lender charges as interest to the borrower, normally expressed as an annual percentage.*
 
 Ok, there are a lot of concepts embedded in there. I´ll try to explain them a little, although I will not dive into too much detail because there are plenty of resources online for that. Our goal is to model the interest rate for a financial application while learning a little bit of F# as beginners.
 
-Basically there are 2 ways to accrue interest: *Simple*, and *Compounded*:
+Basically there are 2 ways to accrue interest: *Simple* and *Compounded*:
 
 $$ Total Interest_{simple} = Principal * (Interest Rate_{simple} * Period  - 1) $$
 $$ Total Interest_{compounded} = Principal * [(1+Interest Rate_{compounded})^{Period} - 1)] $$
 
-However, the last formula above assumes that the the interest is being compounded at the same basis as the interest rate (usually annual). But sometimes, even though the interest rate is being expressed as *annual percentage* (basis), it can be compounded more frequently (say semiannually). In that case, the formula goes to: 
+However, the last formula above assumes that the the interest is being compounded at the same basis as the interest rate (usually annually). But sometimes, even though the interest rate is being expressed as *annual percentage* (basis), it can be compounded more frequently (say semiannually). In that case, the formula goes to: 
 
-$$ T_{comp.} = P * \left [(1+\frac{i_{comp.}}{ N })^{t\over{N}} - 1) \right] $$
+$$ T_{comp.} = P * \left [ \left (1+\frac{i_{comp.}}{ N } \right )^{t\over{N}} - 1 ) \right] $$
 
 For readability sake, I´ve defined: `T = TotalInterest`, `P = Principal`, `i = Interest rate`, `t = Period` and `N = number of compoundings per basis period (usually annual)`
 
 When you think about it, when someone says *Interest rate of 10%*, that has little meaning, since there are a lot of assumptions you will have to make to truly use that in a calculation. From a software development perspective, using a `double` or `decimal` to represent an interest rate is just as meaningless. 
-In fact, it can even induce errors. Supose a junior programmer is looking at the code base and finds somewhere a `decimal interest`. What is that ? is it Total Interest, or Interest rate ? If the former, is it simple, our compounded ? Are all the parameters needed to calculate being passed correctly ? How is the `Period` being calculated ?
+
+In fact, it can even induce errors. Suppose a junior programmer is looking at the code base and finds somewhere a `decimal interest`. What is that ? is it Total Interest, or Interest rate ? If the former, is it simple or compounded ? Are all the parameters needed to calculate being passed correctly ? How is the `Period` being calculated ?
 
 That is where a [Type Driven Design](https://fsharpforfunandprofit.com/posts/designing-with-types-intro/) approach comes to play (which tbh, is just part of Domain Driven Design usual recommendations). We should build expressive types, which make illegal states unrepresentable.
 
@@ -60,9 +62,11 @@ It is clear that *Interest Rates* need at *least* these Information to be comple
     - *Compounded*: if so, it can either be:
         -  *periodic*: compounding "n" times over the basis period
         -  *continuous*: compounding infinite times over the basis period
-- **Daycount Convention**: Since `Period` must be represented as a fraction of the Basis, how do we calculate it from 2 given dates? (e.g. How many years between 03/jan/2018 and 30/nov/2022?)
+- **Daycount Convention**: Since `Period` must be represented as a fraction of the Basis(year), how do we calculate it from 2 given dates? (e.g. How many years between 03/jan/2018 and 30/nov/2022?)
 
-So let´start with the basics. In F# there are basically 2 types of structures possible (not completely true, but bear with me). *And* types and *Or* types. In *And* types, all fields are simultaneously required. It is easily understood by OOP programmers, and in F# are called *Records* and declared as follows:
+So let´start with the basics. In F# there are basically 2 types of structures possible (not completely true, but bear with me). **And** types and **Or** types.
+
+ In **And** types, all fields are simultaneously required. It is easily understood by OOP programmers and in F# are called *Records*, and declared as follows:
 
 ```fsharp
 type InterestRate = {
@@ -71,7 +75,7 @@ type InterestRate = {
     Daycount : DaycountConvention
 }
 ```
- But this is assuming the types `BasisPeriod`, `Compound` and `DaycountConvention` already exists. In F# there is a little trick the community uses when they start modelling the domain. We create a *type alias* called `Undefined` so we can start having a compilable code base before we complete the model definition (this is important when using *REPL* in F#).
+ But this is assuming the types `Compound` and `DaycountConvention` already exists. In F# there is a little trick the community uses when they start modelling the domain. We create a *type alias* called `Undefined` so we can start having a compilable code base before we complete the model definition (this is important when using *REPL*).
 
  ```fsharp
 type Undefined = Exception
@@ -82,7 +86,7 @@ type DaycountConvention = Undefined;
 
 > I´ll not talk about tooling and IDE. But  I highly recommend using Ionide with Visual Studio Code. There is a quick start [here](https://docs.microsoft.com/en-us/dotnet/fsharp/get-started/get-started-vscode?tabs=windows).
 
-The *Or* type on the other hand, represent a list of possible values. Each of which can be associated with other types. Think of it as an Enum on steroids. In F#, they are called *Discriminated Unions*.
+The **Or** type on the other hand, represent a list of possible values. Each of which can be associated with other types. Think of it as an Enum on steroids. In F#, they are called *Discriminated Unions*.
 
 ```fsharp
 type CompoundFrequency = 
@@ -96,7 +100,7 @@ type Compound =
     | Compounded of CompoundFrequency
 ```
 
-The last piece of the puzzle is the DaycountConvention. In order to actually use the interest rate, you´ll need to known how many years (or fraction of years) there are between two given dates. There are a few conventions that are commonly used. And we will describe them in following post. [Wikipedia](https://en.wikipedia.org/wiki/Day_count_convention) has a good list of conventions explaining them in detail. Here are some that I use more frequently:
+The last piece of the puzzle is the `DaycountConvention`. In order to actually use the interest rate, you´ll need to known how many years (or fraction of years) there are between two given dates. There are a few conventions that are commonly used. And we will describe them in following post. [Wikipedia](https://en.wikipedia.org/wiki/Day_count_convention) has a good list of conventions explaining them in detail. Here are some that I use more frequently:
 
 ```fsharp
 type DaycountConvention = 
@@ -110,7 +114,7 @@ type DaycountConvention =
 
 The `DC` prefix stands for **D**aycount**C**onvention. This is just because some of them start with numbers which would be an invalid name.
 
-From here, an usual approach is organize these types into modules, and create a factory function. (*latter on i´ll separate the daycount convention into a separate module*)
+From here, an usual approach is to organize these types into modules, and create a factory function. (I´ll separate the daycount convention into another module on another post)
 
 ```fsharp
 module InterestRate = 
@@ -152,10 +156,15 @@ module InterestRate =
     let cdi = create DCBUS252 (Compounded Annually)
 ```
 
-At the end of the module, I´ve created methods for commonly used interest rates, which are very useful. Of course we can add a lot more then that as we need it. 
+At the end of the module, I´ve created methods for commonly used interest rates, which are very useful. Of course we can add a lot more then that as we need it. We can then create a treasury rate as easily as
 
 ```fsharp
 InterestRate.treasury 0.2M;;
+```
+
+yielding
+
+```fsharp
 val it : InterestRate.InterestRate = {Rate = 0.2M;
                                       Compound = Simple;
                                       Daycount = DCACTACTISDA;}
@@ -195,7 +204,8 @@ let treasury rate = create DCACTACTISDA Simple rate
 It´s the same thing, there is literally no diference. But the ability do *partial application* on functions will be very important when we start combining them.
 
 
-## Wrap up
+## Wraping up
 
-This post was aimed at F# beginners noobs who want to use it on financial applications. It´s far from explaining either finance or functional programming. The goal was to organize and explain a little library I use. Hopefully, the usefulness will be more evident in future posts when other pieces start falling together. However, the very essence of modelling with F# is there. Start describing the problem space, and design structures accordingly. 
-Unlike OOP, behavior is separated from data structures, which is actually a refreshment because really... mixing behavior and data is not very realistic.
+This post was aimed at F# noobs who want to use it on financial applications. It´s far from explaining either finance or functional programming. The goal was to organize and explain a little library I use. Hopefully, the usefulness will be more evident in future posts when other pieces start falling together. However, the very essence of modelling with F# is there. Start describing the problem space, and design structures accordingly. 
+Unlike OOP, behavior is separated from data structures, which is actually a refreshment because really... mixing behavior and data is not very obvious.
+In future posts we will organize the code base a little better with modules and projects.
