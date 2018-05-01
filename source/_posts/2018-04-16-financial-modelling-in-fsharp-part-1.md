@@ -4,7 +4,7 @@ title: "Financial modelling in F# Part 1 - Interest Rates"
 permalink: financial-modelling-in-fsharp-part-1
 date: 2018-04-16 15:43:35
 comments: true
-description: "Financial modelling in F# - Part 1"
+description: "An introduction to finance fundamentals with interest rate using F# as beginners"
 keywords: "F#, finance"
 categories: Modelling
 tags:
