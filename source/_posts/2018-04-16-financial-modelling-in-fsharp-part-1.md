@@ -18,7 +18,7 @@ tags:
 
 I work developing a financial application that is used by financial institutions such as hedge funds and investment banks. One common assignment is to model financial contracts, and calculate many analytics upon them, such as pricing valuation or risk measures. The application is developed in C#. However, I´ve found that F# is a great language to model financial applications, and I use it almost daily to test the application or when creating a new model.
 
-So now I´ve decided to share a little of the modelling. The expressiveness of the type system of the language is astonishing, especially if you com from a Object-Oriented language like myself. OO is bloated with boilerplate code that we unfortunately fall accustomed to like Factories, Visitors, etc. and these constructs are way simpler, or simply don´t make sense in functional languages.
+So now I´ve decided to share a little of the modelling. The expressiveness of the type system of the language is astonishing, especially if you come from a Object-Oriented language like myself. OO is bloated with boilerplate code that we unfortunately fall accustomed to like Factories, Visitors, etc. and these constructs are way simpler, or simply don´t make sense in functional languages.
 
 >There seems to be a bridge people have to cross in order to learn Functional Programing (FP). However, Scott Wlaschin shows in his excellent book [Domain Modeling made functional](https://www.amazon.com/Domain-Modeling-Made-Functional-Domain-Driven/dp/1680502549) that FP can be crystal clear for domain modeling, and well understood even by non-technical people
 
@@ -30,7 +30,7 @@ We will eventually look into some of these bounded contexts, and see with exampl
 
 [Investopedia](https://www.investopedia.com/terms/i/interestrate.asp#ixzz5DFCuY8dw) defines interest rates as:
 
->*An interest rate is the amount of interest due per period, as a proportion of the amount lent, deposited or borrowed (called the principal sum). The total interest on an amount lent or borrowed depends on the principal sum, the interest rate, the compounding frequency, and the length of time over which it is lent, deposited or borrowed. It is defined as the proportion of an amount loaned which a lender charges as interest to the borrower, normally expressed as an annual percentage.*
+>An interest rate is the amount of interest due per period, as a proportion of the amount lent, deposited or borrowed (called the principal sum). The total interest on an amount lent or borrowed depends on the principal sum, the interest rate, the compounding frequency, and the length of time over which it is lent, deposited or borrowed. It is defined as the proportion of an amount loaned which a lender charges as interest to the borrower, normally expressed as an annual percentage.
 
 Ok, there are a lot of concepts embedded in there. I´ll try to explain them a little, although I will not dive into too much detail because there are plenty of resources online for that. Our goal is to model the interest rate for a financial application while learning a little bit of F# as beginners.
 
@@ -112,7 +112,7 @@ type DaycountConvention =
     | DCBUS252
 ```
 
-The `DC` prefix stands for **D**aycount**C**onvention. This is just because some of them start with numbers which would be an invalid name.
+The `DC` prefix stands for `D`aycount `C`onvention. This is just because some of them start with numbers which would be an invalid name.
 
 From here, an usual approach is to organize these types into modules, and create a factory function. (I´ll separate the daycount convention into another module on another post)
 
@@ -201,7 +201,7 @@ I´m declaring that `treasury` is the same as `create DCACTACTISDA Simple` which
 let treasury rate = create DCACTACTISDA Simple rate
 ```
 
-It´s the same thing, there is literally no diference. But the ability do *partial application* on functions will be very important when we start combining them.
+It´s the same thing, there is literally no diference. But the ability to do *partial application* on functions will be very important when we start combining them.
 
 
 ## Wraping up
