@@ -170,7 +170,7 @@ val it : InterestRate.InterestRate = {Rate = 0.2M;
                                       Daycount = DCACTACTISDA;}
 ```
 
-I just want to draw your attention to they way `treasury` method is implemented. It is calling the `create` function, but only passing 2 parameters, instead of the required 3.
+I just want to draw your attention to the way `treasury` method is implemented. It is calling the `create` function, but only passing 2 parameters, instead of the required 3.
 
 ```fsharp
 let create daycount compound rate = //...
