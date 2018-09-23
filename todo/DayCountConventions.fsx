@@ -19,6 +19,13 @@ module DayCount =
     type DaysBetween = DaycountConvention -> DateTime -> DateTime -> int<days>
 
     let actualDaysBetween (startDate:DateTime) (endDate:DateTime) = int ((endDate.Date.Subtract(startDate.Date).TotalDays)) *  1<days>
+    let rec ``30EdaysBetween`` (startDate:DateTime) (endDate:DateTime) =
+        if (startDate.Day = 31) then 
+            ``30EdaysBetween`` (DateTime(startDate.Year, startDate.Month, 30)) endDate
+        else if (endDate.Day = 31) then
+            ``30EdaysBetween`` startDate (DateTime(endDate.Year, endDate.Month, 30))
+        else
+            actualDaysBetween startDate endDate
     
     let daysBetween convention (startDate:DateTime) (endDate:DateTime) =
         match convention with

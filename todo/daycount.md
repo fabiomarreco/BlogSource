@@ -104,7 +104,8 @@ We will start with the easy ones. Every DayCountConvention that starts with DC**
 
 ```fsharp
 //actualDaysBetween : startDate:DateTime -> endDate:DateTime -> int<days>
-let actualDaysBetween (startDate:DateTime) (endDate:DateTime) = int ((endDate.Date.Subtract(startDate.Date).TotalDays)) *  1<days>
+let actualDaysBetween (startDate:DateTime) (endDate:DateTime) = 
+    int ((endDate.Date.Subtract(startDate.Date).TotalDays)) *  1<days>
 ```
 
 The compiler is not able to correctly infer the type of  `startDate` and `endDate`, so I had to specify them. I am also disregarding any "Time" information from DateTime (by using the `Date` property). Next, I am typecasting the result of `TotalDays` to int, and them attaching a unit of measure to it by multiplying by `1<days>`.
@@ -118,10 +119,52 @@ let daysBetween convention (startDate:DateTime) (endDate:DateTime) =
     | DCACTACTISDA
     | DCACT365 -> actualDaysBetween startDate endDate
 
-//warning FS0025: Incomplete pattern matches on this expression. For example, the value 'DC30360US' may indicate a case not covered by the pattern(s).
+//warning FS0025: Incomplete pattern matches on this expression. 
+//   For example, the value 'DC30360US' may indicate a case not covered by the pattern(s).
 ```
  
- The signature of pattern matching is very straight forward. We will soon start diving into cooler features like active patterns. But for now, notice the warning the compiler has shown us. It states that we are not finished. There are conventions not covered by the function (which we will do next). This also gives us the guarantee that when we add a new convention, there won´t be any situation left untreated.
+The signature of pattern matching is very straight forward. We will soon start diving into cooler features like active patterns. But for now, notice the warning the compiler has shown us. It states that we are not finished. There are conventions not covered by the function (which we will do next). This also gives us the guarantee that when we add a new convention, there won´t be any situation left untreated.
+
+#### Active pattern
+
+For `DC30E360`, we will take a look at the [Wikipedia](https://en.wikipedia.org/wiki/Day_count_convention) link which states:
+
+> **30E/360** Date adjustment rules:
+> - If D1 is 31, then change D1 to 30.
+> - If D2 is 31, then change D2 to 30.
+
+We could implement it as this: 
+
+```fsharp
+    let rec ``30EdaysBetween`` (startDate:DateTime) (endDate:DateTime) =
+        if (startDate.Day = 31) then 
+            ``30EdaysBetween`` (DateTime(startDate.Year, startDate.Month, 30)) endDate
+        else if (endDate.Day = 31) then
+            ``30EdaysBetween`` startDate (DateTime(endDate.Year, endDate.Month, 30))
+        else
+            actualDaysBetween startDate endDate
+```
+> F# lets us use names starting with numbers or spaces by using double brackets (` ``..`` `), but it is not allowed on discriminated union declaration.
+
+The function is recursive (which requires the `rec` prefix), adjusting the input as required. However, the implementation above is not consired idiomatic, and we should use pattern matching instead. But how can we pattern match against a property (`DateTime.Day`) ? We can leverage a cool feature called active pattern:
+
+```fsharp
+let (|Date|) (date:DateTime) = (date.Year, date.Month, date.Day)
+```
+
+We are telling F# that it should be able to match a `DateTime` against `Date` with the tuple `(Year, Month, Day)`. For example:
+
+```fsharp
+match DateTime.Today with
+| Date (_, 12, 25) -> printfn "Today is christmas! :)"
+| _ -> printfn "NOT christmas! :("
+```
+
+The underline `_` is a match against anything (not previously matched).
+
+> *Don´t worry if you dont fully understand how it works right now, it will get clearer as we go forward*.
+
+//apply to function aboe.
 
 ---
 
