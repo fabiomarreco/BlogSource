@@ -1,3 +1,6 @@
+#r "paket: nuget FSharp.Date //"
+#load ".fake/DayCountConventions.fsx/intellisense.fsx"
+
 
 type DaycountConvention = 
     | DC30E360
@@ -7,19 +10,20 @@ type DaycountConvention =
     | DCACTACTISDA
     | DCBUS252
 
+[<Measure>] type days
+
+open System
+
+module DayCount = 
+    open System
+    type DaysBetween = DaycountConvention -> DateTime -> DateTime -> int<days>
+
+    let actualDaysBetween (startDate:DateTime) (endDate:DateTime) = int ((endDate.Date.Subtract(startDate.Date).TotalDays)) *  1<days>
+    
+    let daysBetween convention (startDate:DateTime) (endDate:DateTime) =
+        match convention with
+        | DCACT360
+        | DCACTACTISDA
+        | DCACT365 -> (endDate - startDate).TotalDays
 
 
-
-
-type Days = Days of int with
-        static member (+) (Days d1, Days d2) = d1 + d2
-
-
-let d3 = Days 3
-
-
-
-let d4 = Days 4
-
-
-d3 + d4
