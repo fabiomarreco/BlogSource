@@ -1,6 +1,12 @@
 #r "paket: nuget FSharp.Date //"
 #load ".fake/DayCountConventions.fsx/intellisense.fsx"
 
+```fsharp
+type aOption<'a> = 
+    | Some of 'a 
+    | None
+```
+
 
 type DaycountConvention = 
     | DC30E360
@@ -13,6 +19,13 @@ type DaycountConvention =
 [<Measure>] type days
 
 open System
+
+let (|Date|) (date:DateTime) = (date.Year, date.Month, date.Day)
+
+
+let (|EndOfMonth|_|) (date:DateTime) =
+    if (date.AddDays(1.).Month <> date.Month) then Some date.Month
+    else None
 
 module DayCount = 
     open System
@@ -32,5 +45,7 @@ module DayCount =
         | DCACT360
         | DCACTACTISDA
         | DCACT365 -> (endDate - startDate).TotalDays
+
+
 
 

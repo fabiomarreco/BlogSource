@@ -1,11 +1,11 @@
 #Financial Modeling in F# Part 2 - Daycount Conventions
 
 
-I´ve taken some time off since the last post, but as promised we´ll move a little forward on our Finance domain modeling in F#. Again, I´ll try to keep it directed to F#/FP beginners who want to use it on financial applications, explaining step-by-step.
+I´ve taken some time off since the last post, but as promised we´ll move forward on our finance domain modeling in F#. Again, I´ll try to keep it directed to F# & Functional Programming beginners who want to use it on financial applications, explaining it step-by-step.
 
 In the [last post]({{ site.baseurl }}{% post_url 2018-04-16-financial-modelling-in-fsharp-part-1 %}), we saw that an interest rate is made of `Compound` and `DaycountConvention`
 
-So this post will be about how to represent **Daycount Convention**. With this seemly simple requirement, we will actually be able to look into very cool features of the language. I cannot deny I´m a F# fanboy, and hopefully you will see that (besides first impressions), it is a very comfortable language to work with (specially within this domain).
+So this post will be about how to represent **Daycount Convention**. With this seemly simple requirement, we will actually be able to look into very cool features of the language. I cannot deny I´m a F# fanboy, and hopefully you will see that (maybe besides first impressions), it is a very comfortable language to work with (specially within this domain).
 
 ## Daycount convention
 
@@ -13,11 +13,11 @@ Remember the formula for compounded interest from the previous post:
 
 $$ Total Interest_{compounded} = Principal * [(1+Interest Rate_{compounded})^{Period} - 1)] $$
 
-The key parameter here is `Period`. It is amount of time between two dates, represented as a fraction of the Basis(year).
+The key parameter here is `Period`, and that is what we will be focusing on this post. It is amount of time between two dates, represented as a fraction of the Basis (usually a year).
 
 The catch is how to convert two dates into a fraction of a year. There are a number of conventions that are commonly used in finance, [Wikipedia](https://en.wikipedia.org/wiki/Day_count_convention) has a good list of them. Which one you should use depends on the financial contract you are trying to calculate or the source of the interest rate you are using.
 
-I have already defined on the last post the type for the Daycount convention with the ones I use most:
+I have already defined on the last post the type for the Daycount convention with the ones I use most (as a discriminated union):
 
 ```fsharp
 type DaycountConvention = 
@@ -30,12 +30,12 @@ type DaycountConvention =
 ```
 
 As the naming of each convention suggests, these conventions have two parts: 
-- `DaysBetween`: How to calculate number of days between two dates (*and no, it is not allways just subtracting*)
+- `DaysBetween`: How to calculate number of days between two dates.
 - `DaysInYear`: Number of days to consider in a given year
 
 For example: with DC**ACT** **365** you should count the **Act**ual number of days between two dates (subtracting), and then divide by **365** (ignoring leap years).
 
-Ok that is enough to get us started.
+And that is enough to get us started.
 
 
 ##Getting our hands dirty
@@ -43,12 +43,12 @@ Ok that is enough to get us started.
 ### Units of Measure
 
 Starting with the basics, we can see by the description above we are handling time in different measures (day, year). Most of us largely ignore this, and use a `int` or `decimal` to represent them. However, these measures have strict rules to adhere to:
-- You cant add a 2 `years` + 3 `days`, it is an invalid operation
+- You cant add 2 `years` + 3 `days`, it is an invalid operation
 - To convert a `days` to `years` you have to divide by the number of days in a year.
 
 Of course, you can ignore these rules and use a value type. But it is actually very nice to have the compiler notify simple (and common) mistakes. 
 
-Domain Driven Design recommend us to use single [Value Objects](https://martinfowler.com/bliki/ValueObject.html) in these cases. Basically a wrapper arround the value type, exposing only the allowed operations. On C# it would look something like this.
+Domain Driven Design recommend us to use single [Value Objects](https://martinfowler.com/bliki/ValueObject.html) in these cases. Basically a wrapper around the value type, exposing only the allowed operations. On C# it would look something like this.
 
 ```csharp
 public sealed class Days : IEquatable<Days>
@@ -65,12 +65,14 @@ public sealed class Days : IEquatable<Days>
 	public static bool operator !=(Days d1, Days d2) => d1._days != d2._days;
 	public override int GetHashCode() => _days.GetHashCode();
 	public override bool Equals(object obj) => (obj is Days other)?this.Equals(other) : false;
+    //...
 }
 ```
-We could do something similar in F#, with A LOT less code. However, when we are talking about physical measures (meters, feet, BTU, days, etc.) there is a simpler way using (unsurprisingly) Units of Measures:
+We could do something similar in F#, with A LOT less code. However, when we are talking about physical measures (meters, feet, BTU, days, etc.) there is a simpler way using (unsurprisingly) _Units of Measures_:
 
 ```fsharp
 [<Measure>] type days
+[<Measure>] type months
 [<Measure>] type years
 ```  
 
@@ -94,7 +96,7 @@ let somePeriod = days16 + years2 * 365<days/years>
 //val somePeriod : int<days> = 746
 ```
 
-Very cool right ? It is also very fast, since it compiles to simple numeric values.
+Very cool right ? It is also very fast, since it compiles down to simple numeric values.
 
 ### Pattern Matching
 
@@ -108,16 +110,16 @@ let actualDaysBetween (startDate:DateTime) (endDate:DateTime) =
     int ((endDate.Date.Subtract(startDate.Date).TotalDays)) *  1<days>
 ```
 
-The compiler is not able to correctly infer the type of  `startDate` and `endDate`, so I had to specify them. I am also disregarding any "Time" information from DateTime (by using the `Date` property). Next, I am typecasting the result of `TotalDays` to int, and them attaching a unit of measure to it by multiplying by `1<days>`.
+The compiler is not able to automatically infer the type of  `startDate` and `endDate`, so I had to specify them (as `DateTime`). I am also disregarding any "Time" information from DateTime (by using the `Date` property). Next, I am typecasting the result of `TotalDays` to int, and them attaching a unit of measure to it by multiplying by `1<days>`.
 
-we can then then start creating the function that will calculate DaysBetween for a given convention:
+And this function can be used in any convention that uses actual days between. That can be stated with pattern matching as follows:
 
 ```fsharp
-let daysBetween convention (startDate:DateTime) (endDate:DateTime) =
+let daysBetween convention  =
     match convention with
     | DCACT360
     | DCACTACTISDA
-    | DCACT365 -> actualDaysBetween startDate endDate
+    | DCACT365 -> actualDaysBetween
 
 //warning FS0025: Incomplete pattern matches on this expression. 
 //   For example, the value 'DC30360US' may indicate a case not covered by the pattern(s).
@@ -127,26 +129,43 @@ The signature of pattern matching is very straight forward. We will soon start d
 
 #### Active pattern
 
-For `DC30E360`, we will take a look at the [Wikipedia](https://en.wikipedia.org/wiki/Day_count_convention) link which states:
+Next, for `DC30E360`, we will take a look at the [Wikipedia](https://en.wikipedia.org/wiki/Day_count_convention) link which states:
 
-> **30E/360** Date adjustment rules:
+> For all 30*/360 methods:
+> $ DayCount = 360 * (Y_2-Y_1) + 30 * (M_2 - M1)  + (D_2 - D_1) $
+> **30E/360** specific Date adjustment rules:
 > - If D1 is 31, then change D1 to 30.
 > - If D2 is 31, then change D2 to 30.
 
 We could implement it as this: 
 
 ```fsharp
-    let rec ``30EdaysBetween`` (startDate:DateTime) (endDate:DateTime) =
-        if (startDate.Day = 31) then 
-            ``30EdaysBetween`` (DateTime(startDate.Year, startDate.Month, 30)) endDate
-        else if (endDate.Day = 31) then
-            ``30EdaysBetween`` startDate (DateTime(endDate.Year, endDate.Month, 30))
-        else
-            actualDaysBetween startDate endDate
+let ``30EdaysBetween`` (startDate:DateTime) (endDate:DateTime) =
+    let mutable d1 = startDate.Day 
+    let mutable d2 = endDate.Day 
+    let y1 = startDate.Year 
+    let y2 = endDate.Year 
+    let m1 = startDate.Month 
+    let m2 = endDate.Month 
+
+    if (d1 = 31) then d1 <- 30
+    if (d2 = 31) then d2 <- 30
+
+    let years  = (y2 - y1) * 1<years>
+    let months = (m2 - m1) * 1<months>
+    let days   = (d2 - d1) * 1<days>
+
+    (years * 360<days/years>) + (months * 30<days/months>) + days
 ```
 > F# lets us use names starting with numbers or spaces by using double brackets (` ``..`` `), but it is not allowed on discriminated union declaration.
 
-The function is recursive (which requires the `rec` prefix), adjusting the input as required. However, the implementation above is not consired idiomatic, and we should use pattern matching instead. But how can we pattern match against a property (`DateTime.Day`) ? We can leverage a cool feature called active pattern:
+We are adjusting the days as required, and this function works. This is something that we would do in C#/Java without blinking. However, the implementation above is not considered idiomatic. I´ve heard [Scott Wlaschin](https://twitter.com/scottwlaschin) say once that although F# doesn´t enforce you immutability as some functional languages do, it does force you down the walk of shame by using the `mutable` keyword and `<-` operator.
+
+![Walk of Shame](img/let-mutable.gif#center)
+
+Just avoid it unless you REALLY need it. And you usually don´t.
+
+What do we do then? This problem just begs for pattern matching. For starters we can leverage a cool feature called active pattern:
 
 ```fsharp
 let (|Date|) (date:DateTime) = (date.Year, date.Month, date.Day)
@@ -164,7 +183,65 @@ The underline `_` is a match against anything (not previously matched).
 
 > *Don´t worry if you dont fully understand how it works right now, it will get clearer as we go forward*.
 
-//apply to function aboe.
+Applying it to our previous function, we get:
+
+---
+
+```fsharp
+let rec ``30EdaysBetween`` (d1:DateTime) (d2:DateTime) =
+    match (d1, d2) with
+    | ( Date (y1, m1, 31), _) ->  ``30EdaysBetween`` (DateTime(y1, m1, 30)) d2
+    | ( _, Date (y2, m2, 31)) -> ``30EdaysBetween`` d1 (DateTime(y2, m2, 30))
+    | _ ->  actualDaysBetween d1 d2
+```
+
+Looks indeed better. Notices that I have applied the active pattern `|Date|` inside a tuple `(d1, d2)`. So combining pattern matching is perfectly allowed.
+
+Next convention on the list is `DC30360US` which wikipedia describes as:
+
+>**30/360 US**
+> Date adjustment rules (more than one may take effect; apply them in order, and if a date is changed in one rule the changed value is used in the following rules): 
+> - If the investment is EOM and (Date1 is the last day of February) and (Date2 is the last day of February), then change D2 to 30.
+> - If the investment is EOM and (Date1 is the last day of February), then change D1 to 30.
+> - If D2 is 31 and D1 is 30 or 31, then change D2 to 30.
+> - If D1 is 31, then change D1 to 30.
+
+Ah conventions! What would it be of us programmers if there were no ad-hoc rules made up from random unknown people!
+
+Luckly, active patterns are very useful in this scenario. We need a way to identify it is the last day of a month. The difference from the last case, is that this `EndOfMonth`  pattern might, or might not be matched. So we need a partial active pattern:
+
+```fsharp
+let (|EndOfMonth|_|) (date:DateTime) =
+    if (date.AddDays(1.).Month <> date.Month) then Some date.Month
+    else None
+// ( |EndOfMonth|_| ) : date:DateTime -> int option
+```
+
+Notice the return type `int option` ? `Option<T>` in F# is a type that might or might not have a value. It is essentially declared as:
+
+```fsharp
+type Option<'a> = 
+    | Some of 'a 
+    | None
+```
+
+Back to our problem, I will define the _daysBetween_ for 30US convention as:
+
+```fsharp
+let rec ``30USdaysBetween`` (d1:DateTime) (d2:DateTime) =
+    match (d1, d2) with
+    | (EndOfMonth 2, EndOfMonth 2) -> ``30USdaysBetween`` d1 (d2.AddDays(float (30-d2.Day)))
+    | (EndOfMonth 2, _) -> ``30USdaysBetween`` (d1.AddDays(float (30-d2.Day))) d2
+    | (Date(_, _, 30), Date (y2, m2, 31)) 
+    | (Date(_, _, 31), Date (y2, m2, 31)) -> ``30USdaysBetween`` d1 (DateTime(y2, m2, 30))
+    | (Date(y1, m1, 31), _) -> ``30USdaysBetween`` (DateTime(y1, m1, 30)) d2
+    | _ -> actualDaysBetween d1 d2
+
+```
+
+
+
+
 
 ---
 
