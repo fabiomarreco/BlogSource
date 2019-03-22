@@ -9,7 +9,7 @@ So this post will be about how to represent **Daycount Convention**. With this s
 
 ## Daycount convention
 
-Remember the formula for compounded interest from the previous post:
+Remembering the formula for compounded interest from the previous post:
 
 $$ Total Interest_{compounded} = Principal * [(1+Interest Rate_{compounded})^{Period} - 1)] $$
 
@@ -33,7 +33,7 @@ As the naming of each convention suggests, these conventions have two parts:
 - `DaysBetween`: How to calculate number of days between two dates.
 - `DaysInYear`: Number of days to consider in a given year
 
-For example: with DC**ACT** **365** you should count the **Act**ual number of days between two dates (subtracting), and then divide by **365** (ignoring leap years).
+For example: with DC**ACT** **365** you should count the **Act**ual number of days between two dates, and then divide by **365** (ignoring leap years).
 
 And that is enough to get us started.
 
@@ -53,7 +53,7 @@ Domain Driven Design recommend us to use single [Value Objects](https://martinfo
 ```csharp
 public sealed class Days : IEquatable<Days>
 {
-	private int _days;
+	private readonly int _days;
 	public Days(int days)
 	{
 		_days = days;
@@ -68,7 +68,7 @@ public sealed class Days : IEquatable<Days>
     //...
 }
 ```
-We could do something similar in F#, with A LOT less code. However, when we are talking about physical measures (meters, feet, BTU, days, etc.) there is a simpler way using (unsurprisingly) _Units of Measures_:
+We could do something similar in F#, with A LOT less code. However, when we are talking about physical measures (meters, feet, BTU, days, etc.) there is an even simpler way using a feature called (unsurprisingly) _Units of Measures_:
 
 ```fsharp
 [<Measure>] type days
@@ -100,9 +100,9 @@ Very cool right ? It is also very fast, since it compiles down to simple numeric
 
 ### Pattern Matching
 
-Now let´s try to implement the first part of the daycount convention, the one I´ve called `DaysBetween` (which calculates the number of days between two dates). On OOP you would probably implement it by defining an interface, and implement it on each of the possible daycount conventions. Although that can be done here, it is not idiomatic in F#.
+Now let´s try to implement the first part of the daycount convention, the one I´ve called `DaysBetween` (which calculates the number of days between two dates). On OOP you would define a method on an interface `IDayCountConvention`, and implement it on each of the possible daycount conventions. Although that can be done here, it is not idiomatic in F#.
 
-We will start with the easy ones. Every DayCountConvention that starts with DC**ACT**, should calculate the `DaysBetween` them simply as the total actual days, which we can calculate using `DateTime.Subtract` method:
+We will start with the easy ones. Every DayCountConvention that starts with DC**ACT** should calculate the `DaysBetween` simply as the total actual days, which we can calculate using `DateTime.Subtract` method:
 
 ```fsharp
 //actualDaysBetween : startDate:DateTime -> endDate:DateTime -> int<days>
@@ -163,7 +163,7 @@ We are adjusting the days as required, and this function works. This is somethin
 
 ![Walk of Shame](img/let-mutable.gif#center)
 
-Just avoid it unless you REALLY need it. And you usually don´t.
+To be honest, there is no problem in using mutation in a small function with no paralelism or side efects like this. Imperative programming does cause problems when used ostensibly. Besides, when we get used to functional style, the code becomes  more legible, and easier to reason about
 
 What do we do then? This problem just begs for pattern matching. For starters we can leverage a cool feature called active pattern:
 
