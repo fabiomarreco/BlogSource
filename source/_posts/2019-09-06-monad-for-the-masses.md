@@ -19,7 +19,7 @@ I´ve been meaning to write this blog post about monads as a way to help me impr
 
 If came to this post, you probably already heard the dreadfull word _MONADS_ somewhere. Maybe you are trying to make your code `more functional` as seems to be the hype now, are using lambdas, linq queries, immutability etc. and want to take the next step. 
 
-I would probably argue that the next step would be to play arround in a language that supports [curring](https://fsharpforfunandprofit.com/posts/currying/) [partial applications](https://fsharpforfunandprofit.com/posts/partial-application/) and [sum types](https://fsharpforfunandprofit.com/posts/discriminated-unions/). (I´ve talked about those using F# in a [previous post]({{ site.baseurl }}{% post_url 2018-04-16-financial-modelling-in-fsharp-part-1 %}) ). But if you are still not ready to take the jump and are curious about this monad thinggy, fear not, this post is for you. 
+I would probably argue that the next step would be to play arround in a language that supports [curring](https://fsharpforfunandprofit.com/posts/currying/), [partial applications](https://fsharpforfunandprofit.com/posts/partial-application/) and [sum types](https://fsharpforfunandprofit.com/posts/discriminated-unions/). (I´ve talked about those using F# in a [previous post]({{ site.baseurl }}{% post_url 2018-04-16-financial-modelling-in-fsharp-part-1 %}) ). But if you are still not ready to take the jump and are curious about this monad thinggy, fear not, this post is for you. 
 
 >I´ll be using C#, but the concepts can be used in any statically typed language that supports parametric polimorphism (the `<T>` in `Repository<T>` for example). So... golang people can leave now. (kidding).
 
@@ -50,8 +50,9 @@ Some usages of monads are:
 
 And the list goes on. In fact, once you get confortable with it, you will start seeing monads everywhere. We will start with error handling example and see how it goes.
 
+## Unhandled Exception 
 
-Error 
+We all know OOP languages have built in error handling mechanism called exceptions. But sometimes, they can be a huge pain. It is never clear when a method might throw an exception or why. The type of the exception may be anything. And even with java´s 
 
 
 ```csharp
