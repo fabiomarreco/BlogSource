@@ -16,7 +16,7 @@ tags:
 
 # Introduction to the Visitor Pattern in C#
 
-On the [previous]({{ site.baseurl }}{% post_url 2017-12-18-a-generic-specification-pattern-in-c %}) post, we showed how to implement a specification pattern in C#. In short, we have an interface `ISpecification<T>` which states if an object satisfy the specification.
+On the [previous]({% post_url 2017-12-18-a-generic-specification-pattern-in-c %}) post, we showed how to implement a specification pattern in C#. In short, we have an interface `ISpecification<T>` which states if an object satisfy the specification.
 
 ```csharp
 public interface ISpecification<T>
@@ -77,37 +77,39 @@ And these implementations:
 public class ProductMatchesCategory : IProductSpecification
 {
     public string Category { get; }
-    public ProductMatchesCategory (string category)
+    public ProductMatchesCategory(string category)
     {
         this.Category = category;
     }
     public bool IsSatisfiedBy(Product item) => item.Category == this.Category;
-    public void Accept(IProductSpecificationVisitor visitor) => visit.Visit(this);
+    public void Accept(IProductSpecificationVisitor visitor) => visitor.Visit(this);
 }
 
 public class ProductPriceInRange : IProductSpecification
 {
     public decimal LowerBound { get; }
     public decimal UpperBound { get; }
-    public ProductMatchesCategory (decimal lowerBound, decimal upperBound)
+    public ProductPriceInRange(decimal lowerBound, decimal upperBound)
     {
         this.LowerBound = lowerBound;
         this.UpperBound = upperBound;
     }
     public bool IsSatisfiedBy(Product item) => (item.Price >= LowerBound) && (item.Price <= UpperBound);
-    public void Accept(IProductSpecificationVisitor visitor) => visit.Visit(this);
+    public void Accept(IProductSpecificationVisitor visitor) => visitor.Visit(this);
 }
 
 public class ProductAndSpecification : IProductSpecification
 {
     public IProductSpecification Left { get; set; }
     public IProductSpecification Right { get; set; }
-    public AndSpecification(IProductSpecification left, IProductSpecification right)
+    public ProductAndSpecification(IProductSpecification left, IProductSpecification right)
     {
         Left = left;
         Right = right;
     }
     public bool IsSatisfiedBy(Product item) => Left.IsSatisfiedBy(item) && Right.IsSatisfiedBy(item);
+
+    public void Accept(IProductSpecificationVisitor visitor) => visitor.Visit(this);
 }
 ```
 
@@ -116,10 +118,10 @@ The visitor would have a method for each possible implementation, such as:
 ```csharp
 public interface IProductSpecificationVisitor
 {
-    void Visit (ProductMatchesCategory spec);
-    void Visit (ProductPriceInRange spec);
-    void Visit (ProductPriceInRange spec);
-    // .. and more methods for each possible specification
+	void Visit(ProductMatchesCategory spec);
+	void Visit(ProductAndSpecification spec);
+	void Visit(ProductPriceInRange spec);
+	// .. and more methods for each possible specification
 }
 ```
 
@@ -128,20 +130,20 @@ And instead of polluting `ISpecification` interface, we´re going to create a vi
 ```csharp
 public class ProductDescriptionSpecificationVisitor : IProductSpecificationVisitor
 {
-    public string Description { get; private set; } = string.Empty;
+	public string Description { get; private set; } = string.Empty;
 
-    public void Visit (ProductMatchesCategory spec) 
-        => Description += $"Matches Category ({spec.Category})";
+	public void Visit(ProductMatchesCategory spec)
+		=> Description += $"Matches Category ({spec.Category})";
 
-    public void Visit (ProductPriceInRange spec)
-        => Description += $"Price between {spec.LowerBound} and {spec.UpperBound}";
+	public void Visit(ProductPriceInRange spec)
+		=> Description += $"Price between {spec.LowerBound} and {spec.UpperBound}";
 
-    public void Visit (AndProductSpecification spec)
-    {
-        spec.Left.Accept(this);
-        Description += " and ";
-        spec.Right.Accept(this);
-    }
+	public void Visit(ProductAndSpecification spec)
+	{
+		spec.Left.Accept(this);
+		Description += " and ";
+		spec.Right.Accept(this);
+	}
 }
 ```
 
@@ -149,7 +151,7 @@ and we use it like this:
 
 ```csharp
 var descriptionVisitor = new ProductDescriptionSpecificationVisitor();
-productSpecification(descriptionVisitor);
+productSpecification.Accept(descriptionVisitor);
 string description = descriptionVisitor.Description;
 ```
 
@@ -168,7 +170,3 @@ Specification -> Visitor
 
 
 This was a brief introduction to the *Visitor Pattern*, on the next post we´ll create an implementation of this pattern that uses the Generics feature of C# in order to avoid code duplication.
-
-
-
-

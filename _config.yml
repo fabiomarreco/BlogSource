@@ -2,10 +2,19 @@
 permalink: /blog/:year/:title/
 #markdown: kramdown
 markdown: redcarpet
+# kramdown:
+#     input: GFM 
+#     hard_wrap: false
+#     toc_levels: 1..6
+#     syntax_highlighter: rouge
+
+#markdown: redcarpet
 redcarpet:
-  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
+  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data", "disable_indented_code_blocks"]
+  fenced_code_blocks: true
+  lax_spacing: true
 highlighter: pygments
-gems: [jekyll-paginate, jekyll-plantuml]
+plugins: [jekyll-paginate, jekyll-plantuml]
 
 paginate: 5
 paginate_path: "/blog/page/:num/"
@@ -32,7 +41,7 @@ disqus_site_shortname: "fabiomarreco"
 # Author settings
 author:
   name: Fabio Marreco
-  job: Sr. Manager & Software Engineer @ Accenture
+  job: Sr. Manager & Software Engineer
   bio: "Dad, Husband, Software enthusiast with a taste for modeling, functional and OO"
   thumb: /images/author.jpg
   thumb2: /images/author3.jpg

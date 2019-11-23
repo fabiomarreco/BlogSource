@@ -14,7 +14,7 @@ tags:
 
 # Generic Visitor Pattern in C#
 
-In the [Previous post]({{ site.baseurl }}{% post_url 2017-12-28-introduction-to-the-visitor-pattern-in-c %}) we have showed an introduction to the visitor pattern being used to traverse a [specification]({{ site.baseurl }}{% post_url 2017-12-18-a-generic-specification-pattern-in-c %}) expression tree. Now I´ll try to show a more generic version of the visitor. Again using the *specification* as the visitee, but this time the generic version `ISpecification<T>`. This is a more advanced post, I advise being familiar with these patterns before continuing.
+In the [Previous post]({% post_url 2017-12-28-introduction-to-the-visitor-pattern-in-c %}) we have showed an introduction to the visitor pattern being used to traverse a [specification]({% post_url 2017-12-18-a-generic-specification-pattern-in-c %}) expression tree. Now I´ll try to show a more generic version of the visitor. Again using the *specification* as the visitee, but this time the generic version `ISpecification<T>`. This is a more advanced post, I advise being familiar with these patterns before continuing.
 
 We had the specification:
 
@@ -66,7 +66,6 @@ However, when we try to implement the specific product specifications:
 public class ProductMatchesCategory : ISpecification<Product>
 {
     // ..other methods.. //
-
     public void Accept (ISpecificationVisitor<Product> visitor) 
     {
         visitor.Visit(this); // compile-time error!
@@ -81,16 +80,17 @@ There is a little trick I´ve learned in C# when we need to know the inherited t
 First, we´ll create a generic type on the visitor interface representing the child interface itself. Bear with me:
 
 ```csharp
-public interface ISpecificationVisitor<TVisitor, T> : where TVisitor : ISpecificationVisitor<TVisitor, T>
+public interface ISpecificationVisitor<TVisitor, T> where TVisitor : ISpecificationVisitor<TVisitor, T>
 {
     void Visit(AndSpecification<T, TVisitor> spec);
     void Visit(OrSpecification<T, TVisitor> spec);
     void Visit(NotSpecification<T, TVisitor> spec);
 }
 
-public interface ISpecification <in T, in TVisitor> : where TVisitor : ISpecificationVisitor<TVisitor, T>
+public interface ISpecification <in T, in TVisitor> where TVisitor : ISpecificationVisitor<TVisitor, T>
 {
-    void Accept (TVisitor visitor)
+    bool IsSatisfiedBy(T item);
+    void Accept (TVisitor visitor);
 }
 ``` 
 
@@ -122,7 +122,7 @@ public class ProductMatchesCategory : ISpecification<Product, IProductSpecificat
 And that works beautifully. We have a generic specification pattern and we´ll be able to reuse the boolean operators with any specification we want:
 
 ```csharp
-public class AndSpecification<T, TVisitor> :ISpecification<T, TVisitor> where TVisitor : ISpecificationVisitor<TVisitor, T>
+public class AndSpecification<T, TVisitor> : ISpecification<T, TVisitor> where TVisitor : ISpecificationVisitor<TVisitor, T>
 {
     public ISpecification<T, TVisitor> Left { get; }
     public ISpecification<T, TVisitor> Right { get; }
