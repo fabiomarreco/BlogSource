@@ -168,7 +168,3 @@ Specification -> Visitor
 
 
 This was a brief introduction to the *Visitor Pattern*, on the next post we´ll create an implementation of this pattern that uses the Generics feature of C# in order to avoid code duplication.
-
-
-
-

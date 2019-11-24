@@ -1,7 +1,14 @@
 # Build settings
 permalink: /blog/:year/:title/
 #markdown: kramdown
-markdown: redcarpet
+markdown: kramdown
+kramdown:
+    input: GFM 
+    hard_wrap: false
+    toc_levels: 1..6
+    syntax_highlighter: rouge
+
+#markdown: redcarpet
 redcarpet:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
 highlighter: pygments
@@ -32,7 +39,7 @@ disqus_site_shortname: "fabiomarreco"
 # Author settings
 author:
   name: Fabio Marreco
-  job: Sr. Manager & Software Engineer @ Accenture
+  job: Sr. Manager & Software Engineer
   bio: "Dad, Husband, Software enthusiast with a taste for modeling, functional and OO"
   thumb: /images/author.jpg
   thumb2: /images/author3.jpg

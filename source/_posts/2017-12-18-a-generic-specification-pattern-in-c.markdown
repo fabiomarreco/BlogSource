@@ -35,7 +35,7 @@ And suppose we want to add a new feature to our online store, giving the ability
 
 For example, if we want filter based on the product category, we could add a `GetProductsWithCategory` method as such:
 
-```csharp
+``` csharp
 public class ProductRepository 
 {
     private List<Product> _items;
@@ -225,7 +225,7 @@ Following the previous example, suppose that we want our customers to be notifie
 
 As developers, we know for a fact that management will want to change those rules eventually, so we need a solution that allows extensibility without changing existing code. The *Specification Pattern* fits those requirements perfectly.
 
-```csharp
+``` cs
 ISpecification<User> spec = 
     new UserPurchasedProductWithCategory(product.Category)
     .Or(new UserWithStarredProduct(product))
