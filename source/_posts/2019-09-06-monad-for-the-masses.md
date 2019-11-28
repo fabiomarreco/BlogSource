@@ -5,7 +5,7 @@ name: "monad-4-masses"
 date: 2019-09-06
 comments: true
 keywords: "C#, FP, Functional, Monad"
-description: "The dreadfull & scary monads in programming might be simpler then you think."
+description: "A prgamatic monad introduction to c# developers"
 category: Functional Programming
 tags:
 - Functional Programming
@@ -71,24 +71,24 @@ We can make make it total by enhancing the result type to contain the error case
 ```csharp
 public class Result<T>
 {
-	public Result(string errorDescription)
-	{
-		IsSuccess = false;
-		ErrorDescription = errorDescription;
-	}
+    public Result(string errorDescription)
+    {
+        IsSuccess = false;
+        ErrorDescription = errorDescription;
+    }
 
-	public Result(T value)
-	{
-		IsSuccess = true;
-		Value = value;
-	}
+    public Result(T value)
+    {
+        IsSuccess = true;
+        Value = value;
+    }
 
-	public static Result<T> Error(string description) => new Result<T>(description);
-	public static Result<T> Success(T result) => new Result<T>(result);
+    public static Result<T> Error(string description) => new Result<T>(description);
+    public static Result<T> Success(T result) => new Result<T>(result);
 
-	public bool IsSuccess { get; }
-	public T Value { get; }
-	public string ErrorDescription { get; }
+    public bool IsSuccess { get; }
+    public T Value { get; }
+    public string ErrorDescription { get; }
 }
 
 public Result<T> GetItemIndex<T> (T[] array, int index) { 
@@ -151,7 +151,7 @@ public interface IBasket
 
 public interface ICustomerRepository
 {
-    Result<Customer> GetBasketForCustomer(string customerId);
+    Result<Customer> GetCustomerId(string customerId);
 }
 
 //.........
@@ -168,7 +168,7 @@ public Result<IBasket> AddToBasket(string productId, string customerId)
     var reservation = reservationResult.Value;
 
 
-    var customerResult = _customerRepository.GetBasketForCustomer(customerId);
+    var customerResult = _customerRepository.GetCustomerId(customerId);
     if (!customerResult.IsSuccess)
         return Result<IBasket>.Error(customerResult.ErrorDescription);
         
@@ -263,7 +263,7 @@ public Result<IBasket> AddToBasket(string productId, string customerId)
 {
     var productResult = _productRepository.GetProductId(productId);
     var reservationResult = productResult.FlatMap(p => _inventory.ReserveProduct(p));
-    var customerResult = _customerRepository.GetBasketForCustomer(customerId);
+    var customerResult = _customerRepository.GetCustomerId(customerId);
     var result = reservationResult
                     .FlatMap(reservation => 
                         customerResult.Map(c=> c.Basket.WithProductReservation(reservation)));
@@ -285,10 +285,10 @@ Some functional languages have a way to express code using those functions in a 
 
 ```fsharp
 let addToBasket productId customerId = result { 
-	let! product = _productRepository.GetProductId(productId)
-	let! reservation = _inventory.ReserveProduct(product )
-	let! customer = _customerRepository.GetBasketForCustomer(customerId);
-	return customer.Basket.WithProductReservation(reservation)
+    let! product = _productRepository.GetProductId(productId)
+    let! reservation = _inventory.ReserveProduct(product )
+    let! customer = _customerRepository.GetCustomerId(customerId);
+    return customer.Basket.WithProductReservation(reservation)
  } 
 ```
 
@@ -302,38 +302,38 @@ However, there is something on how LINQ is implemented that few people seems to 
 
 ```csharp
 var purchaseReport = 
-	from customer in customers
-	from purchase in customer.Purchases
-	select new {
-		CustomerName = customer.Name,
-		ProductName = purchase.Name,
-		ProcutPrice = purchase.Price
-	}
+    from customer in customers
+    from purchase in customer.Purchases
+    select new {
+        CustomerName = customer.Name,
+        ProductName = purchase.Name,
+        ProcutPrice = purchase.Price
+    }
 ```
 This is actually a syntax sugar for: 
 
 ```csharp
 var purchaseReport =
-	customers
-		.SelectMany(
-			customer => 
-				customer.Purchases
-					.Select(purchase => new {
-						CustomerName = customer.Name,
-						ProductName = purchase.Name,
-						ProcutPrice = purchase.Price }));
+    customers
+        .SelectMany(
+            customer => 
+                customer.Purchases
+                    .Select(purchase => new {
+                        CustomerName = customer.Name,
+                        ProductName = purchase.Name,
+                        ProcutPrice = purchase.Price }));
 ```
 
 And the methods `SelectMany` and `Select` are defined on the `Enumerable` extension class:
 
 ```csharp
 public static IEnumerable<TResult> Select<TSource,TResult>(
-	this IEnumerable<TSource> source,
-	Func<TSource, TResult> selector);
+    this IEnumerable<TSource> source,
+    Func<TSource, TResult> selector);
 
 public static IEnumerable<TResult> SelectMany<TSource,TResult>(
-	this IEnumerable<TSource> source,
-	Func<TSource,IEnumerable<TResult>> selector);
+    this IEnumerable<TSource> source,
+    Func<TSource,IEnumerable<TResult>> selector);
 ```
 
 Take your time to take a good look at those signatures, and compare them with `Map` and `FlatMap`. Any resemblance ? That is because sequences are also _monads_!. In fact, if we define similar extension functions to our `Result<>` we can hijack LINQ´s syntax to have our own monadic computation expression in C#.
@@ -342,22 +342,69 @@ Define the following class:
 ```csharp
 public static class Result
 {
-	public static Result<TResult> Select<TSource, TResult>(this Result<TSource> m, Func<TSource, TResult> f)
-		=> m.Map(f);
+    public static Result<TResult> Select<TSource, TResult>(this Result<TSource> m, Func<TSource, TResult> f)
+        => m.Map(f);
 
-	public static Result<TResult> SelectMany<TSource, TResult>(this Result<TSource> m, Func<TSource, Result<TResult>> f)
-		=> m.FlatMap(f);
+    public static Result<TResult> SelectMany<TSource, TResult>(this Result<TSource> m, Func<TSource, Result<TResult>> f)
+        => m.FlatMap(f);
 
-	/*
-	 *   This function is required by linq for optimization reasons, you can define it 
-	 * in a very mechanical way as bellow
-	 */
-	public static Result<TResult> SelectMany<TSource, TM, TResult>(this Result<TSource> m, Func<TSource, Result<TM>> mSelector, Func<TSource, TM, TResult> rSelector)
-		=> m.FlatMap(v => mSelector(v).Map(tm => rSelector(v, tm)));
+    /*
+        *   This function is required by linq for optimization reasons, you can define it 
+        * in a very mechanical way as bellow
+        */
+    public static Result<TResult> SelectMany<TSource, TM, TResult>(this Result<TSource> m, Func<TSource, Result<TM>> mSelector, Func<TSource, TM, TResult> rSelector)
+        => m.FlatMap(v => mSelector(v).Map(tm => rSelector(v, tm)));
 }
 ```
 
-With the above extension in scope, 
+With the above extension in scope, we can rewrite our `AddToBasket` method as
+
+```csharp
+public Result<IBasket> AddToBasketV3(string productId, string customerId)
+{
+    var result = 
+        from product in _productRepository.GetProductId(productId)
+        from reservation in _inventory.ReserveProduct(product)
+        from customer in _customerRepository.GetCustomerId(customerId)
+        select customer.Basket.WithProductReservation(reservation);
+        
+    return result;
+}
+```
+
+Which is actually doing error handling instead of the usual list/sequence projection. The code also loooks very clean, which is nice. We can even deine nice-to-have methods lke
+
+```csharp
+public static class Result
+{
+    //....
+    public static Result<T> Try<T>(Func<T> fn)
+    {
+        try
+        {
+            var value = fn();
+            return Result<T>.Success(value);
+        }
+        catch(Exception ex)
+        {
+            return Result<T>.Error(ex.Message);
+        }
+    }
+}
+``` 
+
+So we can use on 3rd party libraries like:
+```csharp
+var result = 
+    from dataReader in  Result.Try(() => sqlCommand.Execute())
+    from product in ReadProduct(dataReader)
+    //...
+```
+
+### tl;dr
+
+Monads are a powerfull abstraction that lets us compose pieces of codes
+
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbLTE1NzQ2ODE1NjldfQ==
 -->
