@@ -5,7 +5,7 @@ name: "monad-4-masses"
 date: 2019-09-06
 comments: true
 keywords: "C#, FP, Functional, Monad"
-description: "A prgamatic monad introduction to c# developers"
+description: "A pragmatic monad introduction to c# developers"
 category: Functional Programming
 tags:
 - Functional Programming
@@ -403,7 +403,15 @@ var result =
 
 ### tl;dr
 
-Monads are a powerfull abstraction that lets us compose pieces of codes
+Monads are a powerfull abstraction that lets us compose pieces of codes with some behind-the-scenes state and control flow. Most functional languages have native support for creating and using them. Oddly enought, C# also has a built-in way of expressing them, albait verbose and originally thought only for sequences.
+
+We managed to create a Result monad to express functions that might return a failure. I´ve saved a [gist](https://gist.github.com/fabiomarreco/a9af5b466f080662aa22df8a3047975e) containing this code and will eventually post my own full implementation of the Result monad (with also other usefull monads like Maybe, Reader, etc.).
+
+I´m am not saying you should always use this tecnique, exceptions do have their place. But if you would like to use it, there is a library called [Chessie](http://fsprojects.github.io/Chessie/) that is pretty good (it is implemented in F#, but it works great using from a C# code base).
+
+
+If you would like to dig a little deeper, I highly recomend Scott Wlaschin´s [Railway Oriented Programming blog series](https://fsharpforfunandprofit.com/rop/).
+
 
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbLTE1NzQ2ODE1NjldfQ==
