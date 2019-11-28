@@ -56,7 +56,7 @@ We all know OOP languages have built in error handling mechanism called exceptio
 
 Functional languages try to aim at functions that are not only _"pure"_ (have no side effects) but that are also _"total"_. That means that for every input, there should be an defined output. So throwing exceptions is a type of result that was not defined in the funciton´s signature. Notice the following function, for example:
 
-``` cs
+```csharp
 public T GetItemIndex<T> (T[] array, int index) { 
     return array[index];
 }
@@ -68,7 +68,7 @@ When we try to pass a `index` greater then the array´s length (or negative numb
 
 We can make make it total by enhancing the result type to contain the error case: 
 
-``` cs 
+```csharp
 public class Result<T>
 {
 	public Result(string errorDescription)
@@ -93,10 +93,10 @@ public class Result<T>
 
 public Result<T> GetItemIndex<T> (T[] array, int index) { 
     if (index < 0 )
-        return new Result<T>.Error("Index should be greater then zero");
+        return Result<T>.Error("Index should be greater then zero");
 
     if (index >= array.Length )
-        return new Result<T>.Error("Index is greater then the array size");
+        return Result<T>.Error("Index is greater then the array size");
 
     return Result<T>.Success(array[index]);
 }
@@ -132,7 +132,7 @@ function AddToBasket(productId, customerId)
 
 However each of these steps can fail. If we throw in some error handling, things get a lot uglier:
 
-``` cs
+```csharp
 
 public interface IProductRepository
 {
@@ -186,7 +186,7 @@ Code is now entangled with error handling. Exceptions can also get very messy wi
 
 First, let´s take a look at the last part of our `AddToBasket` function: 
 
-``` cs
+```csharp
 if (!customerResult.IsSuccess)
     return Result<IBasket>.Error(customerResult.ErrorDescription);
     
@@ -199,7 +199,7 @@ return Result<IBasket>.Success(newBasket);
 From the `Result` perspective, it is simply applying a transformation to the customer if it exists. In fact. we can define a function to do just that. Let´s call that function `Map`
 
 
-``` cs
+```csharp
 public class Result<T>
 {
     //...
@@ -216,13 +216,13 @@ public class Result<T>
 
 We can now make the original code more readable:
 
-``` cs
+```csharp
     return customerResult.Map(c=> c.Basket.WithProductReservation(reservation));
 ```
 
 Oneliner! Now we are getting somewhere. Can we apply the same strategy to other pieces of the code ? Let´s try with the first part:
 
-``` cs
+```csharp
 var productResult = _productRepository.GetProductId(productId);
 if (!productResult.IsSuccess)
     return Result<IBasket>.Error(productResult.ErrorDescription);
@@ -236,13 +236,13 @@ var reservation = reservationResult.Value;
 
 Will then become: 
 
-``` cs
+```csharp
 Result<Result<ProductReservation>> productResult.Map(p => _inventory.ReserveProduct(p));
 ```
 
 Huumm.. almost. We need now someway to *flatten* the `Result<Result<T>>` into `Result<T>`. In fact `Map` and then `Flatten` will be so common, we might as well create a function that does both at the same time. Let´s call them `FlatMap`:
 
-```cs
+```csharp
 public class Result<T>
 {
     //...
@@ -258,7 +258,7 @@ public class Result<T>
 
 Thus, the function will become:
 
-``` cs
+```csharp
 public Result<IBasket> AddToBasket(string productId, string customerId)
 {
     var productResult = _productRepository.GetProductId(productId);
@@ -274,5 +274,90 @@ public Result<IBasket> AddToBasket(string productId, string customerId)
 Congratulations, you have now defined a *Monad*. Remember that I said monads need only 3 functions? Let´s recap:
 
 * **Lift**: Takes a value and *lifts* it into a monad. We have defined a surrogate for it. It´s the `Success` function. It takes any valid `T` value and creates a `Result<T>`.
-* **Map**: Transforms the content with a given function, something like `Result<T2> Map(F) 
+* **Map**: Transforms the content (of type `T`) with a function `Func<T, T2>`, something like `Result<T2> Map(Func<T, T2> fn)`. Note that if the `Result` is an error , this functions does nothing, and propagates the error. 
+* **FlatMap**: It is the function that give the monad a _composable_ capability. It will create a `Result<T2>` given a factory method `Func<T, Result<T2>>`. Or `Result<T2> FlatMap(Func<T, T2> fn)`. Sometimes it is called `Bind` or `fmap`
 
+> Defining only the functions **Lift** and **Map** give you the so called _Functor_. It is a usefull abstraction, and sometimes it is all you need. Functors however, are not composable you will need a `FlatMap` thus having a _Monad_.
+
+## Making it pretty
+
+Some functional languages have a way to express code using those functions in a native way. Look at the `AddToBasket` method in F#
+
+```fsharp
+let addToBasket productId customerId = result { 
+	let! product = _productRepository.GetProductId(productId)
+	let! reservation = _inventory.ReserveProduct(product )
+	let! customer = _customerRepository.GetBasketForCustomer(customerId);
+	return customer.Basket.WithProductReservation(reservation)
+ } 
+```
+
+The `result` keyword says that everything inside is _computation expression_ over result, and the `let!`  (instead of the usual `let`) is a syntax sugar for the `FlatMap` (in F# it is actually called `Bind`). And this is usefull to create very expressive code and push boilerplate to somewhere behind the scenes.
+
+Other functional languages have something similar like Haskell´s `do` notation or Scala´s `for` comprehension.
+
+C#´s `async`/`await` use the same idea to make the _monad_ `Task<T>` easy to use. Unfortunaly It only works for tasks.
+
+However, there is something on how LINQ is implemented that few people seems to realize, take a look at the following LINQ Query:
+
+```csharp
+var purchaseReport = 
+	from customer in customers
+	from purchase in customer.Purchases
+	select new {
+		CustomerName = customer.Name,
+		ProductName = purchase.Name,
+		ProcutPrice = purchase.Price
+	}
+```
+This is actually a syntax sugar for: 
+
+```csharp
+var purchaseReport =
+	customers
+		.SelectMany(
+			customer => 
+				customer.Purchases
+					.Select(purchase => new {
+						CustomerName = customer.Name,
+						ProductName = purchase.Name,
+						ProcutPrice = purchase.Price }));
+```
+
+And the methods `SelectMany` and `Select` are defined on the `Enumerable` extension class:
+
+```csharp
+public static IEnumerable<TResult> Select<TSource,TResult>(
+	this IEnumerable<TSource> source,
+	Func<TSource, TResult> selector);
+
+public static IEnumerable<TResult> SelectMany<TSource,TResult>(
+	this IEnumerable<TSource> source,
+	Func<TSource,IEnumerable<TResult>> selector);
+```
+
+Take your time to take a good look at those signatures, and compare them with `Map` and `FlatMap`. Any resemblance ? That is because sequences are also _monads_!. In fact, if we define similar extension functions to our `Result<>` we can hijack LINQ´s syntax to have our own monadic computation expression in C#.
+
+Define the following class:
+```csharp
+public static class Result
+{
+	public static Result<TResult> Select<TSource, TResult>(this Result<TSource> m, Func<TSource, TResult> f)
+		=> m.Map(f);
+
+	public static Result<TResult> SelectMany<TSource, TResult>(this Result<TSource> m, Func<TSource, Result<TResult>> f)
+		=> m.FlatMap(f);
+
+	/*
+	 *   This function is required by linq for optimization reasons, you can define it 
+	 * in a very mechanical way as bellow
+	 */
+	public static Result<TResult> SelectMany<TSource, TM, TResult>(this Result<TSource> m, Func<TSource, Result<TM>> mSelector, Func<TSource, TM, TResult> rSelector)
+		=> m.FlatMap(v => mSelector(v).Map(tm => rSelector(v, tm)));
+}
+```
+
+With the above extension in scope, 
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbLTE1NzQ2ODE1NjldfQ==
+-->
