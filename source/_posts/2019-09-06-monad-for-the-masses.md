@@ -15,13 +15,11 @@ tags:
 
 # Monad for the masses
 
-I´ve been meaning to write this blog post about monads as a way to help me improve my ability to explain monads to the unintiated.
+If you came to this post, you probably already heard the dreadful word _MONADS_ somewhere. Maybe you are trying to make your code `more functional` as seems to be the hype now, maybe you are using lambdas, linq queries, immutability etc. and want to take the next step. 
 
-If you came to this post, you probably already heard the dreadfull word _MONADS_ somewhere. Maybe you are trying to make your code `more functional` as seems to be the hype now, are using lambdas, linq queries, immutability etc. and want to take the next step. 
+I would probably argue that the next step would be to play around in a language that supports [curring](https://fsharpforfunandprofit.com/posts/currying/), [partial applications](https://fsharpforfunandprofit.com/posts/partial-application/) and [sum types](https://fsharpforfunandprofit.com/posts/discriminated-unions/). (I´ve talked about those using F# in a [previous post]({{ site.baseurl }}{% post_url 2018-04-16-financial-modelling-in-fsharp-part-1 %}) ). But if you are still not ready to take the jump (to a functional language) and are curious about this monad thingy, fear not. This post is for you. 
 
-I would probably argue that the next step would be to play arround in a language that supports [curring](https://fsharpforfunandprofit.com/posts/currying/), [partial applications](https://fsharpforfunandprofit.com/posts/partial-application/) and [sum types](https://fsharpforfunandprofit.com/posts/discriminated-unions/). (I´ve talked about those using F# in a [previous post]({{ site.baseurl }}{% post_url 2018-04-16-financial-modelling-in-fsharp-part-1 %}) ). But if you are still not ready to take the jump (to a functional language) and are curious about this monad thinggy, fear not, this post is for you. 
-
->I´ll be using C#, but the concepts can be used in any statically typed language that supports parametric polimorphism (the `<T>` in `Repository<T>` for example). So... golang people can leave now. (kidding).
+>I´ll be using C#, but the concepts can be used in any statically typed language that supports parametric polymorphism (the `<T>` in `Repository<T>` for example). So... golang people can leave now. (kidding).
 
 ## What is a monad, then?
 
@@ -30,31 +28,31 @@ Easy:
 
 Satisfied ?
 
-This is what we get in many explanations out there. The problem is, unless you are a cathegory theory mathematician this holds little meaning. This is indeed the strictly correct definition and is applicable far beyond programming, (albait  incomprehensible to most people). So I will not delve into the mathematical definition. Lets focus on its application to programming.
+This is what we get in many explanations out there. The problem is, unless you are a category theory mathematician this holds little meaning. This is indeed the strictly correct definition and is applicable far beyond programming, (albeit incomprehensible to most people). So I will not delve into the mathematical definition. Lets focus on its application to programming.
 
-> If you are not afraid of a little math, I highly recommed Bartosz Milewski´s [Category Theory for Programmers](https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/). It is free in [PDF](https://github.com/hmemcpy/milewski-ctfp-pdf) and [Kindle](https://github.com/onlurking/category-theory-for-programmers), or in [Hardcover](https://www.blurb.com/b/9621951-category-theory-for-programmers-new-edition-hardco). He also has several [Youtube video classes](https://www.youtube.com/playlist?list=PLqjxJs3NyH72EvfeePfMfUJgBJcspSNYX).
+> If, however you are not afraid of a little math, I highly recommend Bartosz Milewski´s [Category Theory for Programmers](https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/). It is free in [PDF](https://github.com/hmemcpy/milewski-ctfp-pdf) and [Kindle](https://github.com/onlurking/category-theory-for-programmers), or in [Hardcover](https://www.blurb.com/b/9621951-category-theory-for-programmers-new-edition-hardco). He also has several [Youtube video classes](https://www.youtube.com/playlist?list=PLqjxJs3NyH72EvfeePfMfUJgBJcspSNYX).
 
-So to programmers, monads are a powerfull abstraction that lets us compose work while allways abiding to some strict behaviour.
+So to programmers, monads can be a powerful abstraction that lets us compose work while always abiding to some strict behavior.
 
-Still too abstract ? don´t worry, It will become more clear with examples. But know this: All you need to implement a monad are 3 functions `Lift`, `Map` and `FlatMap` (which we will define latter on). 
+I know it still too abstract but don´t worry, It will soon become more clear with examples. But know this: All you need to implement a monad are 3 functions `Lift`, `Map` and `FlatMap` (which we will define latter on). 
 
 Some usages of monads are:
 
 - Error handling
 - Transform & operate on sequences and lists
 - Inject Dependencies
-- Handle side efects (such as logging or state) in a pure function
+- Handle side effects (such as logging or state) in a pure function
 - Lazy code evaluation
 - Optional Values
 - Parsing
 
-And the list goes on. In fact, once you get confortable with it, you will start seeing monads everywhere. We will start with error handling example and see how it goes.
+And the list goes on. In fact, once you get conformable with it, you will start seeing monads everywhere. We will start with error handling example and see how it goes.
 
 ## Unhandled Exception 
 
-We all know OOP languages have built in error handling mechanism called exceptions. But truth beeing told, sometimes they can be a huge pain. It is never clear when a method might throw an exception or why. The type of the exception may be anything. And even with java´s throws declaration, error handling is still akward. 
+We all know OOP languages have built in error handling mechanism called exceptions. But truth being told, sometimes they can be a huge pain. It is never clear when a method might throw an exception or why. The type of the exception may be anything. And even with java´s throws declaration, error handling is still awkward. 
 
-Functional languages try to aim at functions that are not only _"pure"_ (have no side effects) but that are also _"total"_. That means that for every input, there should be an defined output. So throwing exceptions is a type of result that was not defined in the funciton´s signature. Notice the following function, for example:
+Functional languages try to aim at functions that are not only _"pure"_ (have no side effects) but that are also _"total"_. Meaning that for every input there should be an defined output. Throwing exceptions is a type of result that was not defined in the function´s signature. Notice the following function, for example:
 
 ```csharp
 public T GetItemIndex<T> (T[] array, int index) { 
@@ -62,7 +60,7 @@ public T GetItemIndex<T> (T[] array, int index) {
 }
 ```
 
-When we try to pass a `index` greater then the array´s length (or negative number), this function blows up with a `IndexOutOfRangeException`, therefore this function is undefined for some inputs. This function is not _total_.
+When we try to pass an `index` greater then the array´s length (or negative number), this function blows up with a `IndexOutOfRangeException`, therefore this function is undefined for some inputs. This function is not _total_.
 
 ## Making it total
 
@@ -102,22 +100,21 @@ public Result<T> GetItemIndex<T> (T[] array, int index) {
 }
 ```
 
-Now the function is allways defined.
+Now the function is always defined.
 
 > I´ve added an ErrorDescription as string, but you could use an enumeration, or no description at all, It´s up to you.
 
-It is nice that it is a generic type, and can be used in many different scenarios, such as retrieving from database, or anything else that might result in an error.
-
+It is nice that it is a generic type, and can be used in many different scenarios, such as retrieving from database, or anything else that might result in error.
 
 ## Real world mess
 
-If we look at real world examples where we need to combine results from different sources, its usage can become less then ideal. Imagine a simple retail store domain were in order to add a product to a basket, we need to 
+When we look at real world examples where we need to combine results from different sources, the usage of the class above can become less then ideal. Imagine a simple retail store domain were in order to add a product to a basket, where we need to:
 
 1. Retrieve the product from the database
-2. Reserve the product (so that we garantee we have in stock)
-3. Add to a customer basket
+2. Reserve the product (so that we guarantee we have it in stock)
+3. Add the reserved product to a customer basket
 
-Idealy, we would have a function such as (in pseudocode)
+Ideally, we would have a function such as (in pseudo-code)
 
 ``` js
 function AddToBasket(productId, customerId)
@@ -196,7 +193,7 @@ var newBasket = basket.WithProductReservation(reservation);
 return Result<IBasket>.Success(newBasket);
 ```
 
-From the `Result` perspective, it is simply applying a transformation to the customer if it exists. In fact. we can define a function to do just that. Let´s call that function `Map`
+From the `Result` perspective, it is simply applying a transformation to the customer if it exists, or short circuiting in case of error. In fact, we can extract that logic and define a function to do just that. Let´s call that function `Map`
 
 
 ```csharp
@@ -220,7 +217,7 @@ We can now make the original code more readable:
     return customerResult.Map(c=> c.Basket.WithProductReservation(reservation));
 ```
 
-Oneliner! Now we are getting somewhere. Can we apply the same strategy to other pieces of the code ? Let´s try with the first part:
+Oneliner! Now we are getting somewhere. Can we apply the same strategy to other pieces of the code? Let´s try with the first part:
 
 ```csharp
 var productResult = _productRepository.GetProductId(productId);
@@ -237,10 +234,10 @@ var reservation = reservationResult.Value;
 Will then become: 
 
 ```csharp
-Result<Result<ProductReservation>> productResult.Map(p => _inventory.ReserveProduct(p));
+Result<Result<ProductReservation>> reservation = productResult.Map(p => _inventory.ReserveProduct(p));
 ```
 
-Huumm.. almost. We need now someway to *flatten* the `Result<Result<T>>` into `Result<T>`. In fact `Map` and then `Flatten` will be so common, we might as well create a function that does both at the same time. Let´s call them `FlatMap`:
+Huumm.. almost. We need now someway to *flatten* the `Result<Result<T>>` into `Result<T>`. In fact `Map` and then `Flatten` will be so common, we might as well create a function that does both at the same time. Let´s call it `FlatMap`:
 
 ```csharp
 public class Result<T>
@@ -271,17 +268,17 @@ public Result<IBasket> AddToBasket(string productId, string customerId)
 }
 ```
 
-Congratulations, you have now defined a *Monad*. Remember that I said monads need only 3 functions? Let´s recap:
+Congratulations, you have now (inadvertently) defined a *Monad*. Remember that I said monads need only 3 functions? Let´s recap:
 
 * **Lift**: Takes a value and *lifts* it into a monad. We have defined a surrogate for it. It´s the `Success` function. It takes any valid `T` value and creates a `Result<T>`.
-* **Map**: Transforms the content (of type `T`) with a function `Func<T, T2>`, something like `Result<T2> Map(Func<T, T2> fn)`. Note that if the `Result` is an error , this functions does nothing, and propagates the error. 
-* **FlatMap**: It is the function that give the monad a _composable_ capability. It will create a `Result<T2>` given a factory method `Func<T, Result<T2>>`. Or `Result<T2> FlatMap(Func<T, T2> fn)`. Sometimes it is called `Bind` or `fmap`
+* **Map**: Transforms the content (of type `T`) with a function `Func<T, T2>` into a `Result<T2>`. Something like `Result<T2> Map(Func<T, T2> fn)`. Note that if the `Result` is an error , this functions does nothing, just propagates the error. 
+* **FlatMap**: It is the function that give the monad a _composable_ capability. It will create a `Result<T2>` given a method `Func<T, Result<T2>>`. Or `Result<T2> FlatMap(Func<T, T2> fn)`. Sometimes it is called `Bind` or `fmap`
 
-> Defining only the functions **Lift** and **Map** give you the so called _Functor_. It is a usefull abstraction, and sometimes it is all you need. Functors however, are not composable you will need a `FlatMap` thus having a _Monad_.
+> Defining only the functions **Lift** and **Map** give you the so called _Functor_. It is a useful abstraction, and sometimes it is all you need. Functors however, are not composable you will need a `FlatMap` thus having a _Monad_.
 
 ## Making it pretty
 
-Some functional languages have a way to express code using those functions in a native way. Look at the `AddToBasket` method in F#
+Some functional languages have a way to express monads in a native way. Look at the `AddToBasket` method in F#
 
 ```fsharp
 let addToBasket productId customerId = result { 
@@ -292,13 +289,13 @@ let addToBasket productId customerId = result {
  } 
 ```
 
-The `result` keyword says that everything inside is _computation expression_ over result, and the `let!`  (instead of the usual `let`) is a syntax sugar for the `FlatMap` (in F# it is actually called `Bind`). And this is usefull to create very expressive code and push boilerplate to somewhere behind the scenes.
+The `result` keyword says that everything inside is a _computation expression_ over `Result<>`, and the `let!` keyword (instead of the usual `let`) is a syntax sugar for the `FlatMap` (in F# it is actually called `Bind`). And this is useful to create very expressive code and push boilerplate to somewhere behind the scenes.
 
 Other functional languages have something similar like Haskell´s `do` notation or Scala´s `for` comprehension.
 
-C#´s `async`/`await` use the same idea to make the _monad_ `Task<T>` easy to use. Unfortunaly It only works for tasks.
+C#´s `async`/`await` use the same idea to make the _monad_ `Task<T>` easy to use. Unfortunately It only works for tasks.
 
-However, there is something on how LINQ is implemented that few people seems to realize, take a look at the following LINQ Query:
+However, there is something about how LINQ is implemented that few people seems to realize, take a look at the following LINQ Query:
 
 ```csharp
 var purchaseReport = 
@@ -321,7 +318,7 @@ var purchaseReport =
                     .Select(purchase => new {
                         CustomerName = customer.Name,
                         ProductName = purchase.Name,
-                        ProcutPrice = purchase.Price }));
+                        ProductPrice = purchase.Price }));
 ```
 
 And the methods `SelectMany` and `Select` are defined on the `Enumerable` extension class:
@@ -336,7 +333,7 @@ public static IEnumerable<TResult> SelectMany<TSource,TResult>(
     Func<TSource,IEnumerable<TResult>> selector);
 ```
 
-Take your time to take a good look at those signatures, and compare them with `Map` and `FlatMap`. Any resemblance ? That is because sequences are also _monads_!. In fact, if we define similar extension functions to our `Result<>` we can hijack LINQ´s syntax to have our own monadic computation expression in C#.
+Take your time to take a good look at those signatures, and compare them with `Map` and `FlatMap`. Any resemblance? That is because sequences are also _monads_!. In fact, if we define similar extension functions to our `Result<>` we can hijack LINQ´s syntax to have our own monadic computation expression in C#.
 
 Define the following class:
 ```csharp
@@ -372,7 +369,7 @@ public Result<IBasket> AddToBasketV3(string productId, string customerId)
 }
 ```
 
-Which is actually doing error handling instead of the usual list/sequence projection. The code also loooks very clean, which is nice. We can even deine nice-to-have methods lke
+Which is actually doing error handling instead of the usual list/sequence projection. The code also looks very clean, which is nice. We can even define nice-to-have methods like
 
 ```csharp
 public static class Result
@@ -403,16 +400,11 @@ var result =
 
 ### tl;dr
 
-Monads are a powerfull abstraction that lets us compose pieces of codes with some behind-the-scenes state and control flow. Most functional languages have native support for creating and using them. Oddly enought, C# also has a built-in way of expressing them, albait verbose and originally thought only for sequences.
+Monads are a powerful abstraction that lets us compose pieces of codes with some behind-the-scenes state and control flow. Most functional languages have native support for creating and using them. Oddly enough, C# also has a built-in way of expressing them, albeit verbose and originally thought only for sequences.
 
-We managed to create a Result monad to express functions that might return a failure. I´ve saved a [gist](https://gist.github.com/fabiomarreco/a9af5b466f080662aa22df8a3047975e) containing this code and will eventually post my own full implementation of the Result monad (with also other usefull monads like Maybe, Reader, etc.).
+We managed to create a Result monad to express functions that might return a failure. I´ve saved a [gist](https://gist.github.com/fabiomarreco/a9af5b466f080662aa22df8a3047975e) containing this code and will eventually post my own full implementation of the Result monad (with also other useful monads like Maybe, Reader, etc.).
 
-I´m am not saying you should always use this tecnique, exceptions do have their place. But if you would like to use it, there is a library called [Chessie](http://fsprojects.github.io/Chessie/) that is pretty good (it is implemented in F#, but it works great using from a C# code base).
-
-
-If you would like to dig a little deeper, I highly recomend Scott Wlaschin´s [Railway Oriented Programming blog series](https://fsharpforfunandprofit.com/rop/).
+I´m am not saying you should always use this technique, exceptions do have their place. But if you would like to use it, there is a library called [Chessie](http://fsprojects.github.io/Chessie/) that is pretty good (it is implemented in F#, but it works great using from a C# code base).
 
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE1NzQ2ODE1NjldfQ==
--->
+If you would like to dig a little deeper, I highly recommend Scott Wlaschin´s [Railway Oriented Programming blog series](https://fsharpforfunandprofit.com/rop/).
