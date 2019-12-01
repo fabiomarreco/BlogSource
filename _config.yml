@@ -1,7 +1,7 @@
 # Build settings
 permalink: /blog/:year/:title/
-#markdown: kramdown
 markdown: kramdown
+#markdown: redcarpet
 kramdown:
     input: GFM 
     hard_wrap: false
@@ -12,7 +12,7 @@ kramdown:
 redcarpet:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
 highlighter: pygments
-gems: [jekyll-paginate, jekyll-plantuml]
+plugins: [jekyll-paginate, jekyll-plantuml]
 
 paginate: 5
 paginate_path: "/blog/page/:num/"
