@@ -274,7 +274,7 @@ Congratulations, you have now (inadvertently) defined a *Monad*. Remember that I
 * **Map**: Transforms the content (of type `T`) with a function `Func<T, T2>` into a `Result<T2>`. Something like `Result<T2> Map(Func<T, T2> fn)`. Note that if the `Result` is an error , this functions does nothing, just propagates the error. 
 * **FlatMap**: It is the function that give the monad a _composable_ capability. It will create a `Result<T2>` given a method `Func<T, Result<T2>>`. Or `Result<T2> FlatMap(Func<T, T2> fn)`. Sometimes it is called `Bind` or `fmap`
 
-> Defining only the functions **Lift** and **Map** give you the so called _Functor_. It is a useful abstraction, and sometimes it is all you need. Functors however, are not composable you will need a `FlatMap` thus having a _Monad_.
+> Defining only the functions **Lift** and **Map** give you the so called _Functor_. It is a useful abstraction and sometimes it is all you need. Functors however, are not composable you will need a `FlatMap` thus having a _Monad_ (That is where that ´Monads are monoids in the category of endofunctors´ come from. Monoids are composable things, so monads are composable functors).
 
 ## Making it pretty
 
@@ -336,6 +336,7 @@ public static IEnumerable<TResult> SelectMany<TSource,TResult>(
 Take your time to take a good look at those signatures, and compare them with `Map` and `FlatMap`. Any resemblance? That is because sequences are also _monads_!. In fact, if we define similar extension functions to our `Result<>` we can hijack LINQ´s syntax to have our own monadic computation expression in C#.
 
 Define the following class:
+
 ```csharp
 public static class Result
 {
@@ -348,9 +349,9 @@ public static class Result
         => m.FlatMap(f);
 
     /*
-        *   This function is required by linq for optimization reasons, you can define it 
-        * in a very mechanical way as bellow
-        */
+    *   This function is required by linq for optimization reasons, you can define it 
+    * in a very mechanical way as bellow
+    */
     public static Result<TResult> SelectMany<TSource, TM, TResult>(
         this Result<TSource> m, Func<TSource, Result<TM>> mSelector, Func<TSource, TM, TResult> rSelector)
         => m.FlatMap(v => mSelector(v).Map(tm => rSelector(v, tm)));
@@ -394,6 +395,7 @@ public static class Result
 ``` 
 
 So we can use on 3rd party libraries like:
+
 ```csharp
 var result = 
     from dataReader in  Result.Try(() => sqlCommand.Execute())
@@ -407,7 +409,7 @@ Monads are a powerful abstraction that lets us compose pieces of codes with some
 
 We managed to create a Result monad to express functions that might return a failure. I´ve saved a [gist](https://gist.github.com/fabiomarreco/a9af5b466f080662aa22df8a3047975e) containing this code and will eventually post my own full implementation of the Result monad (with also other useful monads like Maybe, Reader, etc.).
 
-I´m am not saying you should always use this technique, exceptions do have their place. But if you would like to use it, there is a library called [Chessie](http://fsprojects.github.io/Chessie/) that is pretty good (it is implemented in F#, but it works great using from a C# code base).
+I´m not saying you should always use this technique, exceptions do have their place. But if you would like to use it, there is a library called [Chessie](http://fsprojects.github.io/Chessie/) that is pretty good (it is implemented in F#, but it works great using from a C# code base).
 
 
 If you would like to dig a little deeper, I highly recommend Scott Wlaschin´s [Railway Oriented Programming blog series](https://fsharpforfunandprofit.com/rop/).
