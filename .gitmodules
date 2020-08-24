@@ -1,0 +1,3 @@
+[submodule "plugins/jekyll-plantuml"]
+	path = plugins/jekyll-plantuml
+	url = https://github.com/yjpark/jekyll-plantuml.git
