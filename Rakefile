@@ -6,7 +6,7 @@ require "jekyll"
 
 # Change your GitHub reponame
 GITHUB_REPONAME = "fabiomarreco/fabiomarreco.github.io"
-GITHUB_REPO_BRANCH = "master"
+GITHUB_REPO_BRANCH = "gh-pages"
 JEKYLL_ENV= "production"
 
 SOURCE = "source/"
