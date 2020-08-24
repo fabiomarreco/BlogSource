@@ -1,12 +1,12 @@
 # Build settings
 permalink: /blog/:year/:title/
-#markdown: kramdown
-markdown: redcarpet
-# kramdown:
-#     input: GFM 
-#     hard_wrap: false
-#     toc_levels: 1..6
-#     syntax_highlighter: rouge
+markdown: kramdown
+#markdown: redcarpet
+kramdown:
+     input: GFM 
+     hard_wrap: false
+     toc_levels: 1..6
+     syntax_highlighter: rouge
 
 #markdown: redcarpet
 redcarpet:
@@ -14,7 +14,7 @@ redcarpet:
   fenced_code_blocks: true
   lax_spacing: true
 highlighter: pygments
-plugins: [jekyll-paginate, jekyll-plantuml]
+plugins: ['jekyll-paginate', 'jekyll-plantuml']
 
 paginate: 10
 paginate_path: "/blog/page/:num/"
